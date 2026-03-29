@@ -65,6 +65,8 @@ tbody tr:hover td{background:#fafbfd}
 .b-late{background:#fef3c7;color:#92400e}
 .b-leave{background:#f3e8ff;color:#6b21a8}
 .b-absent{background:#fee2e2;color:#991b1b}
+.b-trip{background:#e0f2fe;color:#0369a1}
+.radio-opt.opt-trip input:checked + label{border-color:#0369a1;background:#f0f9ff;color:#0369a1}
 .btn{display:inline-flex;align-items:center;gap:5px;padding:9px 16px;border:none;border-radius:9px;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .15s}
 .btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:var(--sh-md)}
 .btn-primary{background:var(--p2);color:#fff}
@@ -189,7 +191,7 @@ input:focus,textarea:focus,select:focus{border-color:var(--p2);box-shadow:0 0 0 
   <div class="sb-brand">
     <div class="sb-brand-row">
       <div class="sb-logo"><span class="material-icons">business</span></div>
-      <div><div class="sb-title">Smart Office</div><div class="sb-sub"></div></div>
+      <div><div class="sb-title">Smart Office</div><div class="sb-sub">สพป.นครราชสีมา เขต 4</div></div>
     </div>
   </div>
   <div id="sb-user" class="sb-user"></div>
@@ -206,6 +208,15 @@ input:focus,textarea:focus,select:focus{border-color:var(--p2);box-shadow:0 0 0 
       <span id="inbox-badge" style="background:red;color:white;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:auto;display:none">0</span>
     </div>
     <div class="nav-item" data-p="wfh_task" onclick="go('wfh_task',this)"><span class="material-icons">home_work</span><span>เสนองาน WFH</span></div>
+    <div class="nav-item" data-p="my_reports" onclick="go('my_reports',this)">
+  <span class="material-icons">history_edu</span>
+  <span>รายงานของฉัน</span>
+</div>
+<!-- เพิ่มต่อจาก nav-item wfh_task -->
+<div class="nav-item" data-p="wfh_history" onclick="go('wfh_history',this)">
+  <span class="material-icons">history</span>
+  <span>ประวัติงาน WFH</span>
+</div>
     <div class="nav-item" data-p="profile" onclick="go('profile',this)"><span class="material-icons">person</span><span>โปรไฟล์ / เปลี่ยนรหัส</span></div>
 
     <!-- หัวหน้ากลุ่มงาน -->
@@ -265,7 +276,8 @@ input:focus,textarea:focus,select:focus{border-color:var(--p2);box-shadow:0 0 0 
         </div>
         <div class="tbl-wrap">
           <table id="tb-dash">
-            <thead><tr><th>ชื่อ-สกุล</th><th>กลุ่มงาน</th><th>สถานะ</th><th>เข้างาน</th><th>ออกงาน</th></tr></thead>
+           
+  '<thead><tr><th>ชื่อ-สกุล</th><th>กลุ่มงาน</th><th>สถานะ</th><th>เข้างาน</th><th>ออกงาน</th><th>ตำแหน่ง</th></tr></thead>
             <tbody id="dash-tbody"></tbody>
           </table>
         </div>
@@ -328,10 +340,11 @@ input:focus,textarea:focus,select:focus{border-color:var(--p2);box-shadow:0 0 0 
         <div class="card" id="work-type-card">
           <div class="card-hd"><span class="material-icons">category</span><h3>วันนี้คุณปฏิบัติงานที่ไหน?</h3></div>
           <div class="radio-group">
-            <div class="radio-opt"><input type="radio" name="wtype" id="wt-office" value="office" checked><label for="wt-office"><span class="material-icons">business</span>มาออฟฟิศ</label></div>
+            <div class="radio-opt"><input type="radio" name="wtype" id="wt-office" value="office" checked><label for="wt-office"><span class="material-icons">business</span>ปฏิบัติงาน ณ สำนักงาน</label></div>
             <div class="radio-opt opt-wfh"><input type="radio" name="wtype" id="wt-wfh" value="wfh"><label for="wt-wfh"><span class="material-icons">home</span>WFH</label></div>
             <div class="radio-opt opt-leave"><input type="radio" name="wtype" id="wt-leave" value="leave"><label for="wt-leave"><span class="material-icons">event_busy</span>ลา</label></div>
-          </div>
+           <div class="radio-opt opt-trip"><input type="radio" name="wtype" id="wt-trip" value="official_trip"><label for="wt-trip"><span class="material-icons">directions_car</span>ไปราชการ</label></div>
+        </div>
           <div id="leave-type-row" style="display:none;margin-top:12px">
             <div class="fg" style="margin-bottom:10px"><label>ประเภทการลา</label><select id="leave-type"><option value="sick">ลาป่วย</option><option value="personal">ลากิจ</option><option value="vacation">ลาพักร้อน</option></select></div>
             <div class="fg"><label>เหตุผล / หมายเหตุ</label><input type="text" id="leave-reason" placeholder="เช่น ไม่สบาย, ธุระส่วนตัว..."></div>
@@ -397,7 +410,24 @@ input:focus,textarea:focus,select:focus{border-color:var(--p2);box-shadow:0 0 0 
         <button class="btn btn-success btn-full" onclick="doSubmitWFH()"><span class="material-icons">cloud_upload</span> เสนองาน WFH</button>
       </div>
     </div>
-
+<!-- ═══ MY REPORTS ═══ -->
+    <div id="my_reports" class="page">
+      <div class="card" style="max-width:780px;margin:0 auto">
+        <div class="card-hd">
+          <span class="material-icons" style="color:var(--p2)">history_edu</span>
+          <h3>รายงานของฉัน</h3>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <input type="date" id="my-reports-date" style="width:auto;padding:6px 10px;font-size:.8rem;border-radius:8px">
+            <button class="btn btn-primary" style="padding:8px 14px;font-size:.82rem" onclick="loadMyReports()">
+              <span class="material-icons" style="font-size:16px">search</span> ค้นหา
+            </button>
+          </div>
+        </div>
+        <div id="my-reports-body" style="min-height:300px">
+          <p style="color:var(--txt2);text-align:center;padding:60px">เลือกวันที่แล้วกด "ค้นหา"</p>
+        </div>
+      </div>
+    </div>
     <!-- ═══ HEAD WFH ═══ -->
     <div id="head_wfh" class="page">
       <div class="card" style="max-width:920px;margin:0 auto">
@@ -485,47 +515,109 @@ input:focus,textarea:focus,select:focus{border-color:var(--p2);box-shadow:0 0 0 
     </div>
 
     <!-- ═══ STAFF MANAGEMENT (superadmin) ═══ -->
-    <div id="staffmgmt" class="page">
-      <!-- เพิ่มใหม่ -->
-      <div class="card" style="max-width:720px;margin:0 auto">
-        <div class="card-hd"><span class="material-icons">person_add</span><h3>เพิ่มบุคลากรใหม่</h3></div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
-          <div class="fg"><label>เลขประจำตัว</label><input id="new-id" placeholder="เช่น 3301200495499"></div>
-          <div class="fg"><label>ชื่อ-สกุล</label><input id="new-name"></div>
-          <div class="fg"><label>ตำแหน่ง</label><input id="new-position"></div>
-          <div class="fg"><label>กลุ่มงาน</label><input id="new-dept"></div>
-          <div class="fg"><label>สิทธิ์ (Role)</label>
-            <select id="new-role">
-              <option value="staff">staff — เจ้าหน้าที่ทั่วไป</option>
-              <option value="HR">HR — เจ้าหน้าที่บุคคล</option>
-              <option value="HRR">HRR — หัวหน้ากลุ่มบุคคล</option>
-              <option value="head">head — หัวหน้ากลุ่มงาน</option>
-              <option value="admin">admin — ผู้บริหาร</option>
-            </select>
+ <div id="staffmgmt" class="page">
+  <!-- เพิ่มใหม่ -->
+  <div class="card" style="max-width:720px;margin:0 auto">
+    <div class="card-hd"><span class="material-icons">person_add</span><h3>เพิ่มบุคลากรใหม่</h3></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+      <div class="fg"><label>เลขประจำตัว</label><input id="new-id" placeholder="เช่น 3301200495499"></div>
+      <div class="fg"><label>ชื่อ-สกุล</label><input id="new-name"></div>
+      <div class="fg"><label>ตำแหน่ง</label><input id="new-position"></div>
+      <div class="fg"><label>กลุ่มงาน</label><input id="new-dept"></div>
+      <div class="fg"><label>สิทธิ์ (Role)</label>
+        <select id="new-role">
+          <option value="staff">staff — เจ้าหน้าที่ทั่วไป</option>
+          <option value="HR">HR — เจ้าหน้าที่บุคคล</option>
+          <option value="HRR">HRR — หัวหน้ากลุ่มบุคคล</option>
+          <option value="head">head — หัวหน้ากลุ่มงาน</option>
+          <option value="admin">admin — ผู้บริหาร</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-success btn-full" onclick="addNewStaff()">เพิ่มบุคลากร</button>
+  </div>
+
+  <!-- Import/Export -->
+  <div class="card" style="max-width:720px;margin:0 auto">
+    <div class="card-hd"><span class="material-icons">download</span><h3>ดาวน์โหลด / อัปโหลดข้อมูลบุคลากร</h3></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="exportStaffTemplateExcel()"><span class="material-icons">table_view</span> ดาวน์โหลด Template Excel (.xlsx)</button>
+      <input type="file" id="upload-excel" accept=".csv,.xlsx" style="display:none" onchange="importStaffFile(this)">
+      <button class="btn btn-ghost" onclick="document.getElementById('upload-excel').click()"><span class="material-icons">upload</span> อัปโหลดไฟล์ (CSV หรือ Excel)</button>
+    </div>
+  </div>
+
+  <!-- รายชื่อ + แก้ไข/ลบ -->
+  <div class="card" style="max-width:720px;margin:0 auto">
+    <div class="card-hd"><span class="material-icons">groups</span><h3>รายชื่อบุคลากรทั้งหมด</h3>
+      <button class="btn btn-ghost" style="margin-left:auto;font-size:.78rem;padding:6px 12px" onclick="renderStaffTable()">
+        <span class="material-icons" style="font-size:16px">refresh</span> รีเฟรช
+      </button>
+    </div>
+    <div id="staff-table-wrap"><p style="color:var(--txt2);font-size:.85rem">กด "รีเฟรช" เพื่อโหลดรายชื่อ</p></div>
+  </div>
+
+  <!-- ลงเวลาย้อนหลัง (superadmin) -->
+  <div class="card" style="max-width:720px;margin:0 auto" id="backdated-clock-card">
+    <div class="card-hd">
+      <span class="material-icons" style="color:var(--warn)">history</span>
+      <h3>ลงเวลาย้อนหลัง (superadmin)</h3>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+      <div class="fg">
+        <label>เลือกบุคลากร</label>
+        <select id="bd-staff"><option value="">— เลือก —</option></select>
+      </div>
+      <div class="fg"><label>วันที่</label><input type="date" id="bd-date"></div>
+      <div class="fg">
+        <label>ประเภท</label>
+        <select id="bd-worktype" onchange="onBdWorktypeChange()">
+          <option value="office">ปฏิบัติงาน ณ สำนักงาน</option>
+          <option value="wfh">WFH</option>
+          <option value="leave">ลา</option>
+        </select>
+      </div>
+      <div class="fg"><label>เวลาเข้างาน (HH:mm)</label><input type="time" id="bd-in" value="08:30"></div>
+      <div class="fg"><label>เวลาออกงาน (HH:mm)</label><input type="time" id="bd-out" value="16:30"></div>
+      <div class="fg" id="bd-leave-row" style="display:none">
+        <label>ประเภทการลา</label>
+        <select id="bd-leavetype">
+          <option value="sick">ลาป่วย</option>
+          <option value="personal">ลากิจ</option>
+          <option value="vacation">ลาพักร้อน</option>
+        </select>
+      </div>
+      <div class="fg" id="bd-reason-row" style="display:none">
+        <label>เหตุผล</label>
+        <input type="text" id="bd-reason" placeholder="ระบุเหตุผล...">
+      </div>
+    </div>
+    <button class="btn btn-warn btn-full" onclick="doBackdatedClock()">
+      <span class="material-icons">history</span> บันทึกเวลาย้อนหลัง
+    </button>
+  </div>
+
+</div>
+<!-- ═══ WFH HISTORY ═══ -->
+    <div id="wfh_history" class="page">
+      <div class="card" style="max-width:860px;margin:0 auto">
+        <div class="card-hd">
+          <span class="material-icons" style="color:var(--success)">home_work</span>
+          <h3 id="wfh-history-title">ประวัติงาน WFH</h3>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <input type="date" id="wfh-history-date" style="width:auto;padding:6px 10px;font-size:.8rem;border-radius:8px">
+            <button class="btn btn-primary" style="padding:8px 14px;font-size:.82rem" onclick="loadWFHHistory()">
+              <span class="material-icons" style="font-size:16px">search</span> โหลด
+            </button>
           </div>
         </div>
-        <button class="btn btn-success btn-full" onclick="addNewStaff()">เพิ่มบุคลากร</button>
-      </div>
-      <!-- Import/Export -->
-      <div class="card" style="max-width:720px;margin:0 auto">
-        <div class="card-hd"><span class="material-icons">download</span><h3>ดาวน์โหลด / อัปโหลดข้อมูลบุคลากร</h3></div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="exportStaffTemplateExcel()"><span class="material-icons">table_view</span> ดาวน์โหลด Template Excel (.xlsx)</button>
-          <input type="file" id="upload-excel" accept=".csv,.xlsx" style="display:none" onchange="importStaffFile(this)">
-          <button class="btn btn-ghost" onclick="document.getElementById('upload-excel').click()"><span class="material-icons">upload</span> อัปโหลดไฟล์ (CSV หรือ Excel)</button>
+        <div id="wfh-history-body" style="min-height:280px">
+          <p style="color:var(--txt2);text-align:center;padding:60px">เลือกวันที่แล้วกด "โหลด"</p>
         </div>
-      </div>
-      <!-- รายชื่อ + แก้ไข/ลบ -->
-      <div class="card" style="max-width:720px;margin:0 auto">
-        <div class="card-hd"><span class="material-icons">groups</span><h3>รายชื่อบุคลากรทั้งหมด</h3>
-          <button class="btn btn-ghost" style="margin-left:auto;font-size:.78rem;padding:6px 12px" onclick="renderStaffTable()">
-            <span class="material-icons" style="font-size:16px">refresh</span> รีเฟรช
-          </button>
-        </div>
-        <div id="staff-table-wrap"><p style="color:var(--txt2);font-size:.85rem">กด "รีเฟรช" เพื่อโหลดรายชื่อ</p></div>
       </div>
     </div>
 
+    <!-- ═══ ADMIN ═══ -->      
     <!-- ═══ ADMIN ═══ -->
     <div id="admin" class="page">
       <div id="admin-gate" class="card" style="max-width:360px;margin:0 auto;text-align:center;padding:32px 22px">
@@ -641,7 +733,7 @@ input:focus,textarea:focus,select:focus{border-color:var(--p2);box-shadow:0 0 0 
 // ═══════════════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════════════
-var API_URL = 'https://script.google.com/macros/s/AKfycbzOA9oeyYdLP4on35lJi8W-OrWYK4s6VYTke6wz5pCl1tmHD52HVcMU-hzCqUZ1FDWrmQ/exec'
+var API_URL = 'https://script.google.com/macros/s/AKfycbw_woBO9dgsH7xF1gvgHzwCfDp6_8NJoRWjB8gurkheiGAUubs6F38QG80RLQsTBCInVg/exec';
 var ROLES_LABEL = {superadmin:'Super Admin',admin:'ผู้บริหาร',HR:'เจ้าหน้าที่บุคคล',HRR:'หัวหน้ากลุ่มบุคคล',head:'หัวหน้ากลุ่มงาน',staff:'เจ้าหน้าที่'};
 var ROLES_COLOR = {superadmin:'#f59e0b',admin:'#3b82f6',HR:'#0369a1',HRR:'#9d174d',head:'#8b5cf6',staff:'#10b981'};
 var SUPER_ADMIN_ID = 'A300400000';
@@ -650,7 +742,7 @@ var DATA = { staff:[], todayAtt:[], summaryApproval:{} };
 var CU   = JSON.parse(localStorage.getItem('cu') || 'null');
 var ROLE = CU?.systemRole || 'staff';
 var APPROVERS = JSON.parse(localStorage.getItem('approvers') || '{"a1":null,"a2":null,"a1Name":"","a2Name":""}');
-var PRIVATE = ['clock','dailyreport','wfh_task','profile','summary','report','staffmgmt','admin','daily_inbox','head_wfh','all_daily_reports'];
+var PRIVATE = ['clock','dailyreport','wfh_task','wfh_history','my_reports','profile','summary','report','staffmgmt','admin','daily_inbox','head_wfh','all_daily_reports'];
 var SUMMARY_DATE = new Date().toISOString().slice(0,10);
 var TEAM_REPORTS_CACHE = [];
 var DR_SELECTED_RECIPIENTS = [];
@@ -680,6 +772,48 @@ function setupWorkTypeListeners() {
     var sel = document.querySelector('input[name=wtype]:checked').value;
     document.getElementById('leave-type-row').style.display = sel === 'leave' ? 'block' : 'none';
   }));
+}
+
+function onBdWorktypeChange() {
+  var wt = document.getElementById('bd-worktype').value;
+  document.getElementById('bd-leave-row').style.display  = wt === 'leave' ? 'block' : 'none';
+  document.getElementById('bd-reason-row').style.display = wt === 'leave' ? 'block' : 'none';
+  document.getElementById('bd-in').disabled  = wt === 'leave';
+  document.getElementById('bd-out').disabled = wt === 'leave';
+}
+
+function populateBdStaffSelect() {
+  var sel = document.getElementById('bd-staff');
+  if (!sel) return;
+  var staffVisible = filterOutSuperAdmin(DATA.staff);
+  sel.innerHTML = '<option value="">— เลือก —</option>' +
+    staffVisible.map(s => `<option value="${s.id}">${s.name} (${s.dept})</option>`).join('');
+}
+
+async function doBackdatedClock() {
+  var staffId   = document.getElementById('bd-staff').value;
+  var date      = document.getElementById('bd-date').value;
+  var workType  = document.getElementById('bd-worktype').value;
+  var clockIn   = document.getElementById('bd-in').value;
+  var clockOut  = document.getElementById('bd-out').value;
+  var leaveType = document.getElementById('bd-leavetype').value;
+  var reason    = document.getElementById('bd-reason').value;
+
+  if (!staffId) return toast('กรุณาเลือกบุคลากร','error');
+  if (!date)    return toast('กรุณาเลือกวันที่','error');
+  if (workType !== 'leave' && !clockIn) return toast('กรุณาระบุเวลาเข้างาน','error');
+
+  showLd('กำลังบันทึก...');
+  try {
+    var r = await api('clockInManual', {
+      staffId, date, clockIn, clockOut, workType,
+      leaveType: workType === 'leave' ? leaveType : null,
+      leaveReason: workType === 'leave' ? reason : null
+    });
+    hideLd();
+    toast(r.msg, r.success ? 'success' : 'error');
+    if (r.success) refreshData();
+  } catch(e) { hideLd(); toast('เกิดข้อผิดพลาด','error'); }
 }
 
 function handleMenuToggleVisibility() {
@@ -720,6 +854,151 @@ async function refreshData() {
   } catch(e) { hideLd(); toast('เชื่อมต่อฐานข้อมูลล้มเหลว','error'); }
 }
 
+
+// ═══════════════════════════════════════════════════
+// MY REPORTS
+// ═══════════════════════════════════════════════════
+async function loadMyReports() {
+  var dateVal = document.getElementById('my-reports-date').value;
+  if (!dateVal) return toast('กรุณาเลือกวันที่','error');
+  showLd('กำลังดึงรายงานของคุณ...');
+  try {
+    var r = await api('getMyDailyReports', { staffId: CU.id, date: dateVal });
+    hideLd();
+    var container = document.getElementById('my-reports-body');
+    var data = r.data || [];
+    if (!data.length) {
+      container.innerHTML = `<div style="text-align:center;padding:60px;color:var(--txt2)">
+        <span class="material-icons" style="font-size:48px;opacity:.25;display:block;margin-bottom:12px">inbox</span>
+        ไม่พบรายงานในวันที่ ${dateVal}
+      </div>`;
+      return;
+    }
+    var html = data.map((rep, i) => `
+      <div class="card" style="margin-bottom:12px;border-left:4px solid var(--p2)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <div style="background:#eff6ff;border-radius:10px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span class="material-icons" style="color:var(--p2);font-size:20px">description</span>
+          </div>
+          <div style="flex:1">
+            <div style="font-weight:800;font-size:.95rem">รายงานฉบับที่ ${i + 1}</div>
+            <div style="font-size:.75rem;color:var(--txt2);margin-top:2px">
+              <span class="material-icons" style="font-size:13px;vertical-align:middle">schedule</span>
+              ส่งเมื่อ ${rep.timestamp || '-'} &nbsp;|&nbsp;
+              <span class="material-icons" style="font-size:13px;vertical-align:middle">send</span>
+              ถึง: ${rep.recipientNames || '-'}
+            </div>
+          </div>
+          <button class="btn btn-primary" style="padding:7px 12px;flex-shrink:0"
+            onclick='printMyReport(${JSON.stringify(rep)})'>
+            <span class="material-icons" style="font-size:17px">picture_as_pdf</span>
+          </button>
+        </div>
+
+        <div style="display:grid;gap:10px">
+          <div style="background:#f8fafc;border-radius:10px;padding:12px">
+            <div style="font-size:.72rem;font-weight:800;color:var(--p2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;gap:5px">
+              <span class="material-icons" style="font-size:14px">task_alt</span> ผลการปฏิบัติงานวันนี้
+            </div>
+            <div style="font-size:.88rem;line-height:1.7;white-space:pre-wrap">${esc(rep.workDone) || '-'}</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:#fff5f5;border-radius:10px;padding:12px">
+              <div style="font-size:.72rem;font-weight:800;color:var(--danger);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;gap:5px">
+                <span class="material-icons" style="font-size:14px">warning_amber</span> ปัญหาและอุปสรรค
+              </div>
+              <div style="font-size:.85rem;line-height:1.6;white-space:pre-wrap;color:${esc(rep.problems) ? 'var(--txt)' : 'var(--txt2)'}">${esc(rep.problems) || '— ไม่มี —'}</div>
+            </div>
+            <div style="background:#f0fdf4;border-radius:10px;padding:12px">
+              <div style="font-size:.72rem;font-weight:800;color:var(--success);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;gap:5px">
+                <span class="material-icons" style="font-size:14px">event_note</span> แผนงานพรุ่งนี้
+              </div>
+              <div style="font-size:.85rem;line-height:1.6;white-space:pre-wrap;color:${rep.nextPlan ? 'var(--txt)' : 'var(--txt2)'}">${rep.nextPlan || '— ไม่มี —'}</div>
+            </div>
+          </div>
+        </div>
+      </div>`).join('');
+
+    container.innerHTML = html;
+  } catch(e) { hideLd(); toast('โหลดข้อมูลล้มเหลว','error'); }
+}
+
+function printMyReport(rep) {
+  var dateStr = new Date().toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  var w = window.open('','_blank','width=800,height=950');
+  w.document.write(`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8">
+  <title>รายงานของฉัน - ${CU.name}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Sarabun',sans-serif;padding:44px;color:#0f172a;font-size:14px;line-height:1.8}
+    .header{text-align:center;margin-bottom:30px;padding-bottom:18px;border-bottom:3px solid #1e3a8a}
+    .header h1{font-size:18px;font-weight:800;color:#1e3a8a;margin-bottom:4px}
+    .header h2{font-size:15px;font-weight:700}
+    .meta-table{width:100%;border-collapse:collapse;margin-bottom:24px;font-size:13px}
+    .meta-table td{padding:7px 12px;border:1px solid #e2e8f0}
+    .meta-table td:first-child{background:#f1f5f9;font-weight:700;width:30%}
+    .section-label{font-weight:800;color:#1e3a8a;font-size:14px;margin:20px 0 8px;
+      padding-left:12px;border-left:4px solid #1e3a8a;display:flex;align-items:center;gap:6px}
+    .content-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;
+      padding:14px 16px;min-height:70px;font-size:13px;white-space:pre-wrap;line-height:1.8}
+    .sig-section{margin-top:64px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;text-align:center;font-size:12px}
+    .sig-box .sig-label{color:#64748b;font-size:11px;margin-bottom:36px}
+    .sig-box .sig-line{border-bottom:1px solid #0f172a;margin:0 auto 8px;width:160px}
+    .sig-box .sig-name{font-weight:700;font-size:13px}
+    .sig-box .sig-role{color:#64748b;margin-top:3px;font-size:11px}
+    .doc-no{text-align:right;font-size:11px;color:#94a3b8;margin-bottom:8px}
+    @media print{body{padding:28px}}
+  </style></head><body>
+  <div class="doc-no">เลขที่เอกสาร: DR-${rep.reportId || Date.now()}</div>
+  <div class="header">
+    <h1>รายงานผลการปฏิบัติงานประจำวัน</h1>
+    <h2>สำนักงานเขตพื้นที่การศึกษาประถมศึกษานครราชสีมา เขต 4</h2>
+  </div>
+
+  <table class="meta-table">
+    <tr><td>ชื่อ-สกุล</td><td><strong>${CU.name}</strong></td></tr>
+    <tr><td>กลุ่มงาน / ฝ่าย</td><td>${CU.dept || '-'}</td></tr>
+    <tr><td>วันที่รายงาน</td><td>วัน${dateStr}</td></tr>
+    <tr><td>เวลาที่ส่งรายงาน</td><td>${rep.timestamp || '-'}</td></tr>
+    <tr><td>ส่งถึง</td><td>${rep.recipientNames || '-'}</td></tr>
+  </table>
+
+  <div class="section-label">1. ผลการปฏิบัติงานที่สำเร็จในวันนี้</div>
+  <div class="content-box">${esc(rep.workDone) || '-'}</div>
+
+  <div class="section-label">2. ปัญหาและอุปสรรคที่พบ</div>
+  <div class="content-box">${esc(rep.problems) || '— ไม่มีปัญหา —'}</div>
+
+  <div class="section-label">3. แผนการปฏิบัติงานในวันถัดไป</div>
+  <div class="content-box">${rep.nextPlan || '— ไม่มี —'}</div>
+
+  <div class="sig-section">
+    <div class="sig-box">
+      <div class="sig-label">ผู้รายงาน</div>
+      <div class="sig-line"></div>
+      <div class="sig-name">(${CU.name})</div>
+      <div class="sig-role">${CU.dept || ''}</div>
+    </div>
+    <div class="sig-box">
+      <div class="sig-label">หัวหน้ากลุ่มงาน / ผู้รับทราบ</div>
+      <div class="sig-line"></div>
+      <div class="sig-name">(...................................)</div>
+      <div class="sig-role">หัวหน้ากลุ่มงาน</div>
+    </div>
+    <div class="sig-box">
+      <div class="sig-label">ผู้บริหาร / ผู้อนุมัติ</div>
+      <div class="sig-line"></div>
+      <div class="sig-name">(...................................)</div>
+      <div class="sig-role">ผู้อำนวยการ สพป.นม.4</div>
+    </div>
+  </div>
+
+  <script>window.onload=()=>window.print()<\/script>
+  </body></html>`);
+  w.document.close();
+}
 // ═══════════════════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════════════════
@@ -786,7 +1065,7 @@ function applyRole() {
   document.getElementById('nav-daily-inbox').style.display = canInbox ? 'flex' : 'none';
 
   // ── สรุปรายวัน / รายงาน (HR, HRR, head, admin, superadmin) ──
-  var canSeeSummary = isApprover() || isAdmin() || isHead;
+  var canSeeSummary = isApprover() || isAdmin() || isHR() || ROLE === 'head';
   document.getElementById('nav-sec-mgr').style.display    = canSeeSummary ? 'block' : 'none';
   document.getElementById('nav-summary').style.display    = canSeeSummary ? 'flex'  : 'none';
   document.getElementById('nav-sec-report').style.display = canSeeSummary ? 'block' : 'none';
@@ -829,6 +1108,7 @@ function renderUserBadge() {
     </div>`;
 }
 
+
 // ═══════════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════════
@@ -844,6 +1124,8 @@ function go(p, el) {
     wfh_task:'🏠 เสนองาน WFH', profile:'👤 โปรไฟล์', summary:'📋 สรุปรายวัน & รับรอง',
     report:'📈 สรุปเวลา / รายงาน', staffmgmt:'👥 จัดการบุคลากร', admin:'🛡️ ตั้งค่าระบบ',
     head_wfh:'🏠 ผล WFH กลุ่ม', daily_inbox:'📥 รายงานที่ได้รับ',
+    my_reports:'📋 รายงานของฉัน',
+    wfh_history:'📋 ประวัติงาน WFH',
     all_daily_reports:'📚 รายงานทุกกลุ่ม'
   };
   document.getElementById('page-title').innerText = titles[p]||p;
@@ -855,10 +1137,24 @@ function go(p, el) {
   if (p === 'dailyreport') renderDRPage();
   if (p === 'head_wfh') renderHeadWFHPage();
   if (p === 'daily_inbox') loadReceivedReports();
-  if (p === 'staffmgmt') renderStaffTable();
-  if (p === 'all_daily_reports') {
+if (p === 'staffmgmt') {
+  renderStaffTable();
+  populateBdStaffSelect(); // ← เพิ่มบรรทัดนี้
+}
+ if (p === 'all_daily_reports') {
     document.getElementById('all-reports-date').value = new Date().toISOString().slice(0,10);
     loadAllDailyReports();
+  }
+  // ✅ เพิ่มตรงนี้
+if (p === 'wfh_history') {
+  document.getElementById('wfh-history-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('wfh-history-title').innerText =
+    ROLE === 'head' ? `ประวัติงาน WFH — กลุ่ม ${CU.dept}` : 'ประวัติงาน WFH ของฉัน';
+  loadWFHHistory();
+}
+  if (p === 'my_reports') {
+    document.getElementById('my-reports-date').value = new Date().toISOString().slice(0,10);
+    loadMyReports();
   }
 }
 
@@ -872,19 +1168,22 @@ function renderDashboard() {
   var office = att.filter(r => !r.workType || r.workType==='office').length;
   var wfh    = att.filter(r => r.workType==='wfh').length;
   var leave  = att.filter(r => r.workType==='leave').length;
-  var absent = total - office - wfh - leave;
+  var trip   = att.filter(r => r.workType==='official_trip').length;
+  var absent = total - office - wfh - leave - trip;
   var now = new Date();
+
   document.getElementById('today-lbl').innerText = now.toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
   document.getElementById('stat-grid').innerHTML = `
     <div class="sc" style="--ac:#2563eb;--ic-bg:#dbeafe;--ic-col:#1d4ed8;--vc:var(--txt)"><div class="sc-ico"><span class="material-icons">groups</span></div><div class="sc-lbl">ทั้งหมด</div><div class="sc-val">${total}</div><div class="sc-sub">คน</div></div>
-    <div class="sc" style="--ac:#059669;--ic-bg:#dcfce7;--ic-col:#15803d;--vc:var(--success)"><div class="sc-ico"><span class="material-icons">business</span></div><div class="sc-lbl">มาออฟฟิศ</div><div class="sc-val">${office}</div><div class="sc-sub">คน</div></div>
+    <div class="sc" style="--ac:#059669;--ic-bg:#dcfce7;--ic-col:#15803d;--vc:var(--success)"><div class="sc-ico"><span class="material-icons">business</span></div><div class="sc-lbl">ปฏิบัติงาน ณ สำนักงาน</div><div class="sc-val">${office}</div><div class="sc-sub">คน</div></div>
     <div class="sc" style="--ac:#0891b2;--ic-bg:#ecfeff;--ic-col:#0891b2;--vc:#0891b2"><div class="sc-ico"><span class="material-icons">home</span></div><div class="sc-lbl">WFH</div><div class="sc-val">${wfh}</div><div class="sc-sub">คน</div></div>
     <div class="sc" style="--ac:#7c3aed;--ic-bg:#f5f3ff;--ic-col:#7c3aed;--vc:var(--purple)"><div class="sc-ico"><span class="material-icons">event_busy</span></div><div class="sc-lbl">ลา</div><div class="sc-val">${leave}</div><div class="sc-sub">คน</div></div>
+    <div class="sc" style="--ac:#0369a1;--ic-bg:#e0f2fe;--ic-col:#0369a1;--vc:#0369a1"><div class="sc-ico"><span class="material-icons">directions_car</span></div><div class="sc-lbl">ไปราชการ</div><div class="sc-val">${trip}</div><div class="sc-sub">คน</div></div>
     <div class="sc" style="--ac:#dc2626;--ic-bg:#fee2e2;--ic-col:#dc2626;--vc:var(--danger)"><div class="sc-ico"><span class="material-icons">person_off</span></div><div class="sc-lbl">ยังไม่ลงเวลา</div><div class="sc-val">${absent}</div><div class="sc-sub">คน</div></div>`;
 
   document.getElementById('group-summary').innerHTML = `
-    <div class="card" style="text-align:center"><span class="material-icons" style="font-size:28px;color:#1e40af">business</span><div style="font-size:1.4rem;font-weight:800;margin:8px 0">${office}</div><div style="color:#1e40af">มาออฟฟิศ</div></div>
+    <div class="card" style="text-align:center"><span class="material-icons" style="font-size:28px;color:#1e40af">business</span><div style="font-size:1.4rem;font-weight:800;margin:8px 0">${office}</div><div style="color:#1e40af">ปฏิบัติงาน ณ สำนักงาน</div></div>
     <div class="card" style="text-align:center"><span class="material-icons" style="font-size:28px;color:#166534">home</span><div style="font-size:1.4rem;font-weight:800;margin:8px 0">${wfh}</div><div style="color:#166534">WFH</div></div>
     <div class="card" style="text-align:center"><span class="material-icons" style="font-size:28px;color:#6b21a8">event_busy</span><div style="font-size:1.4rem;font-weight:800;margin:8px 0">${leave}</div><div style="color:#6b21a8">ลา</div></div>`;
 
@@ -892,21 +1191,32 @@ function renderDashboard() {
     var rec = att.find(a => a.id === s.id);
     var statusHTML = !rec
       ? `<span class="badge b-absent">ยังไม่ลงเวลา</span>`
-      : rec.workType==='wfh'   ? `<span class="badge b-wfh">WFH</span>`
-      : rec.workType==='leave' ? `<span class="badge b-leave">${rec.leaveType||'ลา'}</span>`
-      : rec.status==='สาย'     ? `<span class="badge b-late">มาสาย</span>`
-      : `<span class="badge b-office">มาออฟฟิศ</span>`;
+      : rec.workType==='wfh'            ? `<span class="badge b-wfh">WFH</span>`
+      : rec.workType==='official_trip'  ? `<span class="badge b-trip">ไปราชการ</span>`
+      : rec.workType==='leave'          ? `<span class="badge b-leave">${rec.leaveType||'ลา'}</span>`
+      : rec.status==='สาย'              ? `<span class="badge b-late">มาสาย</span>`
+      : `<span class="badge b-office">ปฏิบัติงาน ณ สำนักงาน</span>`;
+
+    // ✅ locationBadge อยู่ใน map ถูกที่แล้ว
+    var locationBadge = !rec
+      ? ''
+      : rec.location && rec.location !== 'ไม่ระบุ location' && rec.location !== ''
+      ? `<span style="font-size:.72rem;color:#0369a1">📍 ${rec.location}</span>`
+      : `<span style="font-size:.72rem;color:#94a3b8">ไม่ระบุ</span>`;
+
     return `<tr onclick="viewStaffDetail('${s.id}')" style="cursor:pointer">
       <td><strong>${s.name}</strong></td>
       <td><small>${s.dept}</small></td>
       <td>${statusHTML}</td>
       <td>${rec?.clockIn||'-'}</td>
       <td>${rec?.clockOut||'-'}</td>
+      <td>${locationBadge}</td>
     </tr>`;
   }).join('');
-  document.getElementById('dash-tbody').innerHTML = rows || `<tr><td colspan="5" align="center" style="padding:40px;color:var(--txt2)">ยังไม่มีข้อมูลวันนี้</td></tr>`;
-}
 
+  document.getElementById('dash-tbody').innerHTML = rows ||
+    `<tr><td colspan="6" align="center" style="padding:40px;color:var(--txt2)">ยังไม่มีข้อมูลวันนี้</td></tr>`;
+}
 // ═══════════════════════════════════════════════════
 // DASHBOARD PDF
 // ═══════════════════════════════════════════════════
@@ -943,7 +1253,7 @@ function printDashboardPDF() {
   <div class="header"><h1>บันทึกข้อมูลการปฏิบัติงานประจำวัน</h1><h2>สำนักงานเขตพื้นที่การศึกษาประถมศึกษานครราชสีมา เขต 4</h2>
   <div class="meta">วัน${dateDisplay} &nbsp;|&nbsp; ณ เวลา ${timeDisplay} น. &nbsp;|&nbsp; บุคลากรทั้งหมด ${staffVisible.length} คน</div></div>
   <div class="stats">
-    <div class="stat" style="background:#dbeafe"><div class="num" style="color:#1e40af">${office}</div><div class="lbl" style="color:#1e40af">มาออฟฟิศ</div></div>
+    <div class="stat" style="background:#dbeafe"><div class="num" style="color:#1e40af">${office}</div><div class="lbl" style="color:#1e40af">ปฏิบัติงาน ณ สำนักงาน</div></div>
     <div class="stat" style="background:#dcfce7"><div class="num" style="color:#166534">${wfh}</div><div class="lbl" style="color:#166534">WFH</div></div>
     <div class="stat" style="background:#f3e8ff"><div class="num" style="color:#6b21a8">${leave}</div><div class="lbl" style="color:#6b21a8">ลา</div></div>
     <div class="stat" style="background:#fee2e2"><div class="num" style="color:#dc2626">${absent}</div><div class="lbl" style="color:#dc2626">ยังไม่ลงเวลา</div></div>
@@ -992,17 +1302,62 @@ function renderClockPage() {
   }
 }
 
+
+// แทนที่ฟังก์ชัน doClockIn() เดิม
 async function doClockIn() {
-  var wtype = document.querySelector('input[name=wtype]:checked')?.value||'office';
-  var leaveType   = wtype==='leave' ? document.getElementById('leave-type').value : null;
-  var leaveReason = wtype==='leave' ? document.getElementById('leave-reason').value : null;
+  var wtype = document.querySelector('input[name=wtype]:checked')?.value || 'office';
+  var leaveType   = wtype === 'leave' ? document.getElementById('leave-type').value : null;
+  var leaveReason = wtype === 'leave' ? document.getElementById('leave-reason').value : null;
+
+  showLd('กำลังระบุตำแหน่ง...');
+  var locationStr = await getLocationString();
+
   showLd('กำลังบันทึก...');
   try {
-    var r = await api('clockIn',{id:CU.id,name:CU.name,dept:CU.dept,method:'manual',workType:wtype,leaveType,leaveReason});
+    var r = await api('clockIn', {
+      id: CU.id, name: CU.name, dept: CU.dept,
+      method: 'manual', workType: wtype,
+      leaveType, leaveReason,
+      location: locationStr
+    });
     hideLd();
-    if (r.success) { toast('✅ บันทึกเวลาเข้างานสำเร็จ','success'); setTimeout(refreshData,1500); }
-    else toast(r.msg,'error');
-  } catch(e) { hideLd(); toast('Error','error'); }
+    if (r.success) {
+      toast('✅ บันทึกเวลาเข้างานสำเร็จ' + (locationStr !== 'ไม่ระบุ location' ? ' 📍' + locationStr : ''), 'success');
+      setTimeout(refreshData, 1500);
+    } else toast(r.msg, 'error');
+  } catch(e) { hideLd(); toast('Error', 'error'); }
+}
+
+// ฟังก์ชันดึง GPS + reverse geocode
+async function getLocationString() {
+  return new Promise(resolve => {
+    if (!navigator.geolocation) return resolve('ไม่รองรับ GPS');
+    navigator.geolocation.getCurrentPosition(
+      async pos => {
+        try {
+          var lat = pos.coords.latitude;
+          var lng = pos.coords.longitude;
+          // Reverse geocode ด้วย Nominatim (ฟรี ไม่ต้อง API key)
+          var res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=th`,
+            { headers: { 'User-Agent': 'SmartOffice/1.0' } }
+          );
+          var data = await res.json();
+          var addr = data.address || {};
+          // ดึงชื่อจังหวัด + อำเภอ
+          var province = addr.state || addr.province || '';
+          var district = addr.county || addr.city_district || addr.suburb || '';
+          var label = [district, province].filter(Boolean).join(', ') || data.display_name?.split(',').slice(-3).join(',') || `${lat.toFixed(4)},${lng.toFixed(4)}`;
+          resolve(label);
+        } catch(e) {
+          // ถ้า reverse geocode ล้มเหลว ใช้ lat/lng แทน
+          resolve(`${pos.coords.latitude.toFixed(5)},${pos.coords.longitude.toFixed(5)}`);
+        }
+      },
+      err => resolve('ไม่ระบุ location'),
+      { timeout: 8000, maximumAge: 0 }
+    );
+  });
 }
 
 async function doClockOut() {
@@ -1014,30 +1369,77 @@ async function doClockOut() {
     else toast(r.msg,'error');
   } catch(e) { hideLd(); toast('Error','error'); }
 }
-
+async function loadWFHHistory() {
+  if (!CU) return;
+  var dateVal = document.getElementById('wfh-history-date').value;
+  if (!dateVal) return toast('กรุณาเลือกวันที่','error');
+  showLd('กำลังโหลด...');
+  try {
+    var r = await api('getWFHHistory', {
+      date: dateVal,
+      staffId: ROLE === 'head' ? null : CU.id,   // head ดูทั้งกลุ่ม, staff ดูเฉพาะตัวเอง
+      dept:    ROLE === 'head' ? CU.dept : null
+    });
+    hideLd();
+    var body = document.getElementById('wfh-history-body');
+    if (!r.data || !r.data.length) {
+      body.innerHTML = `<p style="text-align:center;padding:60px;color:var(--txt2)">ไม่มีข้อมูลในวันที่เลือก</p>`;
+      return;
+    }
+    var html = `<div class="tbl-wrap"><table>
+      <thead><tr>
+        <th>ชื่อ-สกุล</th>
+        <th>กลุ่มงาน</th>
+        <th>รายละเอียดงาน</th>
+        <th>เวลาที่ส่ง</th>
+        <th>สถานะ</th>
+      </tr></thead><tbody>`;
+    r.data.forEach(item => {
+      html += `<tr>
+        <td><strong>${item.name}</strong></td>
+        <td><small>${item.dept}</small></td>
+        <td style="max-width:320px;white-space:pre-wrap">${item.taskDesc}</td>
+        <td><small>${item.timestamp}</small></td>
+        <td><span class="badge b-wfh">${item.status||'ส่งงานแล้ว'}</span></td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+    body.innerHTML = html;
+  } catch(e) { hideLd(); toast('โหลดข้อมูลล้มเหลว','error'); }
+}
 // ═══════════════════════════════════════════════════
 // DAILY REPORT — SEND
 // ═══════════════════════════════════════════════════
 function renderDRPage() {
   if (!CU) return;
-  // ✅ FIX: เพิ่ม 'head' เป็น recipient ได้
-  var candidates = filterOutSuperAdmin(DATA.staff).filter(s =>
-    (s.role === 'HRR' || s.role === 'head' || s.role === 'admin') && s.id !== CU.id
-  );
+
+  // ✅ แก้ตรงนี้จุดเดียว
+  var candidates = filterOutSuperAdmin(DATA.staff).filter(s => {
+    if (s.id === CU.id) return false;                              // ไม่เอาตัวเอง
+    if (s.role === 'HRR' || s.role === 'admin') return true;       // HRR/admin ทุกคน
+    if (s.role === 'HR') return true;                              // HR ทุกคน
+    if (s.role === 'head' && s.dept === CU.dept) return true;      // head กลุ่มเดียวกันเท่านั้น
+    return false;
+  });
+
   if (DR_SELECTED_RECIPIENTS.length === 0 && candidates.length > 0) {
+    // เลือก head กลุ่มเดียวกัน + HRR เป็นค่าเริ่มต้น
     DR_SELECTED_RECIPIENTS = candidates
-      .filter(s => s.dept === CU.dept || s.role === 'HRR' || s.role === 'admin')
+      .filter(s => (s.role === 'head' && s.dept === CU.dept) || s.role === 'HRR')
       .map(s => s.id);
     if (DR_SELECTED_RECIPIENTS.length === 0) DR_SELECTED_RECIPIENTS = [candidates[0].id];
   }
+
   var listEl = document.getElementById('dr-check-list');
   if (!candidates.length) {
-    listEl.innerHTML = `<div style="padding:12px;color:var(--txt2);font-size:.85rem"><span class="material-icons" style="font-size:15px;vertical-align:middle">info</span> ยังไม่มีผู้รับในระบบ</div>`;
+    listEl.innerHTML = `<div style="padding:12px;color:var(--txt2);font-size:.85rem">
+      <span class="material-icons" style="font-size:15px;vertical-align:middle">info</span>
+      ยังไม่มีผู้รับในระบบ</div>`;
   } else {
     listEl.innerHTML = candidates.map(s => {
       var checked = DR_SELECTED_RECIPIENTS.includes(s.id) ? 'checked' : '';
-      var sel = DR_SELECTED_RECIPIENTS.includes(s.id) ? 'selected' : '';
-      var rc = {HR:'role-hr',HRR:'role-hrr',head:'role-head',admin:'role-admin'}[s.role]||'role-staff';
+      var sel     = DR_SELECTED_RECIPIENTS.includes(s.id) ? 'selected' : '';
+      var rc      = {HR:'role-hr',HRR:'role-hrr',head:'role-head',admin:'role-admin'}[s.role] || 'role-staff';
       return `<div class="dr-check-item ${sel}" id="drc-${s.id}" onclick="toggleRecipient('${s.id}')">
         <input type="checkbox" ${checked} onclick="event.stopPropagation();toggleRecipient('${s.id}')">
         <span class="dr-check-name">${s.name}</span>
@@ -1048,7 +1450,6 @@ function renderDRPage() {
   }
   updateSelectedPreview(candidates);
 }
-
 function toggleRecipient(id) {
   var idx = DR_SELECTED_RECIPIENTS.indexOf(id);
   if (idx > -1) DR_SELECTED_RECIPIENTS.splice(idx,1);
@@ -1160,17 +1561,38 @@ function printIndividualReport(data) {
     .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#f7fafc;padding:15px;border-radius:8px;margin-bottom:20px;font-size:14px}
     .section-label{font-weight:700;color:#1e3a8a;font-size:15px;margin-top:20px;margin-bottom:8px;border-left:4px solid #1e3a8a;padding-left:10px}
     .content-area{background:#fff;border:1px solid #e2e8f0;padding:15px;border-radius:6px;min-height:60px;white-space:pre-wrap;font-size:14px}
-    .footer-sig{margin-top:60px;display:grid;grid-template-columns:1fr 1fr;text-align:center;font-size:14px}
-    .sig-box{margin-top:40px}@media print{body{padding:20px}}</style></head><body>
+    .sig-section{margin-top:60px;display:grid;grid-template-columns:1fr 1fr;gap:40px;text-align:center;font-size:13px}
+    .sig-box .sig-line{border-bottom:1px solid #000;height:40px;margin-bottom:8px}
+    .sig-box .sig-name{font-weight:700;margin-bottom:4px}
+    .sig-box .sig-role{color:#64748b;font-size:12px}
+    .sig-box .sig-label{font-size:11px;color:#64748b;margin-bottom:4px}
+    @media print{body{padding:20px}}</style></head><body>
     <div class="header"><h1>รายงานผลการปฏิบัติงานประจำวัน</h1><div style="font-weight:600;margin-top:5px">สพป.นครราชสีมา เขต 4</div></div>
-    <div class="meta-grid"><div><strong>ผู้รายงาน:</strong> ${data.name}</div><div><strong>กลุ่มงาน:</strong> ${data.dept}</div>
-    <div><strong>วันที่:</strong> ${dateStr}</div><div><strong>เวลาที่ส่ง:</strong> ${data.timestamp}</div></div>
-    <div class="section-label">1. ผลการปฏิบัติงานที่สำคัญวันนี้</div><div class="content-area">${data.workDone}</div>
-    <div class="section-label">2. ปัญหาและอุปสรรค</div><div class="content-area">${data.problems||'- ไม่มี -'}</div>
-    <div class="section-label">3. แผนการปฏิบัติงานในวันถัดไป</div><div class="content-area">${data.nextPlan||'- ไม่มี -'}</div>
-    <div class="footer-sig">
-      <div class="sig-box"><p>ลงชื่อ......................................................</p><p>(${data.name})</p><p>ผู้รายงาน</p></div>
-      <div class="sig-box"><p>ลงชื่อ......................................................</p><p>(....................................................)</p><p>หัวหน้ากลุ่มงาน/ผู้รับรายงาน</p></div>
+    <div class="meta-grid">
+      <div><strong>ผู้รายงาน:</strong> ${data.name}</div>
+      <div><strong>กลุ่มงาน:</strong> ${data.dept}</div>
+      <div><strong>วันที่:</strong> ${dateStr}</div>
+      <div><strong>เวลาที่ส่ง:</strong> ${data.timestamp}</div>
+    </div>
+    <div class="section-label">1. ผลการปฏิบัติงานที่สำคัญวันนี้</div>
+    <div class="content-area">${data.workDone}</div>
+    <div class="section-label">2. ปัญหาและอุปสรรค</div>
+    <div class="content-area">${data.problems||'- ไม่มี -'}</div>
+    <div class="section-label">3. แผนการปฏิบัติงานในวันถัดไป</div>
+    <div class="content-area">${data.nextPlan||'- ไม่มี -'}</div>
+    <div class="sig-section">
+      <div class="sig-box">
+        <div class="sig-label">ผู้รายงาน</div>
+        <div class="sig-line"></div>
+        <div class="sig-name">(${data.name})</div>
+        <div class="sig-role">เจ้าหน้าที่ผู้รายงาน</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-label">ผู้รับรองรายงาน</div>
+        <div class="sig-line"></div>
+        <div class="sig-name">(${CU?.name||'......................................................'})</div>
+        <div class="sig-role">หัวหน้ากลุ่มงาน / ผู้รับรายงาน</div>
+      </div>
     </div>
     <script>window.onload=function(){window.print();}<\/script></body></html>`);
   win.document.close();
@@ -1216,9 +1638,9 @@ async function loadAllDailyReports() {
       reps.forEach(function(rep) {
         var repJson = JSON.stringify(rep).replace(/'/g, '&#39;');
         html += `<tr>
-          <td><strong>${rep.name}</strong><br><small style="color:var(--txt2)">${rep.timestamp||''}</small></td>
-          <td style="max-width:300px"><div style="white-space:pre-wrap;max-height:80px;overflow:hidden">${rep.workDone}</div></td>
-          <td>${rep.problems||'<span style="color:#94a3b8">—</span>'}</td>
+          <td><strong>${esc(rep.name)}</strong><br><small style="color:var(--txt2)">${rep.timestamp||''}</small></td>
+          <td style="max-width:300px"><div style="white-space:pre-wrap;max-height:80px;overflow:hidden">${esc(rep.workDone)}</div></td>
+          <td>${esc(rep.problems)||'<span style="color:#94a3b8">—</span>'}</td>
           <td>${rep.nextPlan||'<span style="color:#94a3b8">—</span>'}</td>
           <td style="text-align:center">
             <button class="btn btn-primary" style="padding:6px" onclick='printIndividualReport(${repJson})'>
@@ -1247,7 +1669,7 @@ function printAllDailyReportsPDF() {
   var dateVal = document.getElementById('all-reports-date').value;
   var dateStr = new Date(dateVal).toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   var rows = ALL_DAILY_REPORTS_CACHE.map(function(rep,i){
-    return `<tr><td style="text-align:center">${i+1}</td><td>${rep.name}</td><td style="color:#64748b;font-size:11px">${rep.dept}</td><td>${rep.workDone.substring(0,120)}${rep.workDone.length>120?'...':''}</td><td>${rep.problems||'-'}</td><td>${rep.nextPlan||'-'}</td></tr>`;
+    return `<tr><td style="text-align:center">${i+1}</td><td>${esc(rep.name)}</td><td style="color:#64748b;font-size:11px">${rep.dept}</td><td>${esc(rep.workDone).substring(0,120)}${esc(rep.workDone).length>120?'...':''}</td><td>${esc(rep.problems)||'-'}</td><td>${rep.nextPlan||'-'}</td></tr>`;
   }).join('');
   var w = window.open('','_blank','width=1100,height=900');
   w.document.write(`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><title>รายงานผลงานทุกกลุ่ม</title>
@@ -1419,59 +1841,62 @@ function renderSummaryContent() {
   var office = att.filter(r=>!r.workType||r.workType==='office');
   var wfh    = att.filter(r=>r.workType==='wfh');
   var leave  = att.filter(r=>r.workType==='leave');
+  var trip   = att.filter(r=>r.workType==='official_trip');
   var presentIds = att.map(a=>String(a.staffId||a.id));
   var absent = staffVisible.filter(s=>!presentIds.includes(String(s.id)));
 
-  var thead = `<thead><tr>
+var thead = `<thead><tr>
     <th>ชื่อ-สกุล</th><th>กลุ่มงาน</th><th>เข้างาน</th><th>ออกงาน</th><th>สถานะ</th>
-    ${isSuperAdmin() ? '<th style="width:60px;text-align:center">แก้ไข</th>' : ''}
+    ${(isSuperAdmin() || isHR()) ? '<th style="width:60px;text-align:center">แก้ไข</th>' : ''}
   </tr></thead>`;
 
   function makeRows(list, isStaff) {
-    if (!isStaff) return list.map(s => `
-      <tr>
-        <td><strong>${s.name}</strong></td>
-        <td style="color:var(--txt2);font-size:.8rem">${s.dept}</td>
-        <td>-</td><td>-</td>
-        <td><span class="badge b-absent">ขาดงาน</span></td>
-        ${isSuperAdmin() ? `<td style="text-align:center">
-          <button class="btn btn-ghost" style="padding:5px" onclick="editAttendance('${s.id}','${s.name}','${dateStr}')">
-            <span class="material-icons" style="font-size:16px;color:var(--p2)">edit</span>
-          </button>
-        </td>` : ''}
-      </tr>`).join('');
+   if (!isStaff) return list.map(s => `
+  <tr>
+    <td><strong>${s.name}</strong></td>
+    <td style="color:var(--txt2);font-size:.8rem">${s.dept}</td>
+    <td>-</td><td>-</td>
+    <td><span class="badge b-absent">ขาดงาน</span></td>
+    ${(isSuperAdmin() || isHR()) ? `<td style="text-align:center">
+      <button class="btn btn-ghost" style="padding:5px" onclick="editAttendance('${s.id}','${s.name}','${dateStr}')">
+        <span class="material-icons" style="font-size:16px;color:var(--p2)">edit</span>
+      </button>
+    </td>` : ''}
+  </tr>`).join('');
 
     return list.map(r => {
-      var lbl = r.status==='สาย' ? '<span class="badge b-late">มาสาย</span>' : '<span class="badge b-office">ปกติ</span>';
-      if (r.workType==='wfh')   lbl = '<span class="badge b-wfh">WFH</span>';
-      if (r.workType==='leave') lbl = `<span class="badge b-leave">${r.leaveType||'ลา'}</span>`;
-      return `<tr>
-        <td><strong>${r.name}</strong></td>
-        <td style="color:var(--txt2);font-size:.8rem">${r.dept}</td>
-        <td>${r.clockIn||'-'}</td>
-        <td>${r.clockOut||'-'}</td>
-        <td>${lbl}</td>
-        ${isSuperAdmin() ? `<td style="text-align:center">
-          <button class="btn btn-ghost" style="padding:5px" onclick="editAttendance('${r.staffId||r.id}','${r.name}','${dateStr}')">
-            <span class="material-icons" style="font-size:16px;color:var(--p2)">edit</span>
-          </button>
-        </td>` : ''}
-      </tr>`;
-    }).join('');
-  }
+  var lbl = r.status==='สาย' ? '<span class="badge b-late">มาสาย</span>' : '<span class="badge b-office">ปกติ</span>';
+  if (r.workType==='wfh')   lbl = '<span class="badge b-wfh">WFH</span>';
+  if (r.workType==='official_trip') lbl = '<span class="badge b-trip">ไปราชการ</span>';
+  if (r.workType==='leave') lbl = `<span class="badge b-leave">${r.leaveType||'ลา'}</span>`;
+  return `<tr>
+    <td><strong>${r.name}</strong></td>
+    <td style="color:var(--txt2);font-size:.8rem">${r.dept}</td>
+    <td>${r.clockIn||'-'}</td>
+    <td>${r.clockOut||'-'}</td>
+    <td>${lbl}</td>
+    ${(isSuperAdmin() || isHR()) ? `<td style="text-align:center">
+      <button class="btn btn-ghost" style="padding:5px" onclick="editAttendance('${r.staffId||r.id}','${r.name}','${dateStr}')">
+        <span class="material-icons" style="font-size:16px;color:var(--p2)">edit</span>
+      </button>
+    </td>` : ''}
+  </tr>`;
+}).join('');
+}
 
   var html='';
-  if(office.length) html+=`<div class="sum-group"><div class="sum-group-hd sg-office"><span class="material-icons" style="font-size:17px">business</span> มาออฟฟิศ (${office.length} คน)</div><div class="tbl-wrap"><table>${thead}<tbody>${makeRows(office,true)}</tbody></table></div></div>`;
+  if(office.length) html+=`<div class="sum-group"><div class="sum-group-hd sg-office"><span class="material-icons" style="font-size:17px">business</span> ปฏิบัติงาน ณ สำนักงาน (${office.length} คน)</div><div class="tbl-wrap"><table>${thead}<tbody>${makeRows(office,true)}</tbody></table></div></div>`;
   if(wfh.length)    html+=`<div class="sum-group"><div class="sum-group-hd sg-wfh"><span class="material-icons" style="font-size:17px">home</span> WFH (${wfh.length} คน)</div><div class="tbl-wrap"><table>${thead}<tbody>${makeRows(wfh,true)}</tbody></table></div></div>`;
+ if(trip.length) html+=`<div class="sum-group"><div class="sum-group-hd" style="background:#e0f2fe;color:#0369a1"><span class="material-icons" style="font-size:17px">directions_car</span> ไปราชการ (${trip.length} คน)</div><div class="tbl-wrap"><table>${thead}<tbody>${makeRows(trip,true)}</tbody></table></div></div>`;
   if(leave.length)  html+=`<div class="sum-group"><div class="sum-group-hd sg-leave"><span class="material-icons" style="font-size:17px">event_busy</span> ลา (${leave.length} คน)</div><div class="tbl-wrap"><table>${thead}<tbody>${makeRows(leave,true)}</tbody></table></div></div>`;
   if(absent.length) html+=`<div class="sum-group"><div class="sum-group-hd sg-absent"><span class="material-icons" style="font-size:17px">person_off</span> ยังไม่ลงเวลา / ขาด (${absent.length} คน)</div><div class="tbl-wrap"><table>${thead}<tbody>${makeRows(absent,false)}</tbody></table></div></div>`;
   document.getElementById('sum-groups').innerHTML = html || '<p style="color:var(--txt2);text-align:center;padding:20px">ไม่มีข้อมูลในวันที่เลือก</p>';
 }
 
 function editDailyReport(rep) {
-  var newWork = prompt('แก้ไขผลการปฏิบัติงาน:', rep.workDone);
+  var newWork = prompt('แก้ไขผลการปฏิบัติงาน:', esc(rep.workDone));
   if (newWork === null) return;
-  var newProb = prompt('แก้ไขปัญหา:', rep.problems || '');
+  var newProb = prompt('แก้ไขปัญหา:', esc(rep.problems) || '');
   if (newProb === null) return;
   var newPlan = prompt('แก้ไขแผนพรุ่งนี้:', rep.nextPlan || '');
   if (newPlan === null) return;
@@ -1488,13 +1913,46 @@ function deleteDailyReport(reportId) {
 }
 
 function editAttendance(staffId, name, dateStr) {
-  var newIn  = prompt(`เวลาเข้างาน (HH:mm) ของ ${name}:`, '');
-  if (newIn === null) return;
-  var newOut = prompt(`เวลาออกงาน (HH:mm) ของ ${name}:`, '');
-  if (newOut === null) return;
+  document.getElementById('ea-staffid').value = staffId;
+  document.getElementById('ea-date').value    = dateStr;
+  document.getElementById('ea-name').innerText = name;
+  document.getElementById('ea-dateshow').innerText = dateStr;
+  // โหลดค่าเดิม
+  var rec = (DATA._summaryDateAtt || DATA.todayAtt).find(a => (a.staffId||a.id) === staffId);
+  document.getElementById('ea-worktype').value   = rec?.workType || 'office';
+  document.getElementById('ea-in').value         = rec?.clockIn  || '';
+  document.getElementById('ea-out').value        = rec?.clockOut || '';
+  document.getElementById('ea-leavetype').value  = rec?.leaveType || 'sick';
+  onEaWorktypeChange();
+  openMo('mo-edit-att');
+}
+
+function onEaWorktypeChange() {
+  var wt = document.getElementById('ea-worktype').value;
+  document.getElementById('ea-leave-row').style.display = wt === 'leave' ? 'block' : 'none';
+  document.getElementById('ea-time-rows').style.display = wt === 'leave' ? 'none'  : 'block';
+}
+
+async function doSaveEditAtt() {
+  var staffId   = document.getElementById('ea-staffid').value;
+  var dateStr   = document.getElementById('ea-date').value;
+  var workType  = document.getElementById('ea-worktype').value;
+  var clockIn   = document.getElementById('ea-in').value;
+  var clockOut  = document.getElementById('ea-out').value;
+  var leaveType = document.getElementById('ea-leavetype').value;
   showLd('กำลังบันทึก...');
-  api('updateAttendance', { staffId, date: dateStr, clockIn: newIn, clockOut: newOut })
-    .then(r => { hideLd(); toast(r.msg, r.success?'success':'error'); if(r.success) { refreshData(); loadSummaryForDate(dateStr); } });
+  try {
+    var r = await api('updateAttendance', {
+      staffId, date: dateStr,
+      clockIn:  workType === 'leave' ? '' : clockIn,
+      clockOut: workType === 'leave' ? '' : clockOut,
+      workType,
+      leaveType: workType === 'leave' ? leaveType : ''
+    });
+    hideLd();
+    toast(r.msg, r.success ? 'success' : 'error');
+    if (r.success) { closeMo('mo-edit-att'); refreshData(); loadSummaryForDate(dateStr); }
+  } catch(e) { hideLd(); toast('เกิดข้อผิดพลาด','error'); }
 }
 
 function populateApproverSelects() {
@@ -1755,39 +2213,47 @@ function printAllReportPDF(start,end) {
 // ✅ STAFF TABLE (superadmin: แก้ไข + ลบ)
 // ═══════════════════════════════════════════════════
 var roleClasses = {HR:'role-hr',HRR:'role-hrr',staff:'role-staff',head:'role-head',admin:'role-admin',superadmin:'role-superadmin'};
+async function doResetPassword(staffId, name) {
+  if (!confirm(`รีเซ็ตรหัสผ่านของ "${name}" เป็น 12345678 ใช่มั้ย?`)) return;
+  showLd('กำลังรีเซ็ต...');
+  try {
+    var r = await api('resetPassword', { staffId });
+    hideLd();
+    toast(r.msg, r.success ? 'success' : 'error');
+  } catch(e) { hideLd(); toast('เกิดข้อผิดพลาด','error'); }
+}
 
 function renderStaffTable() {
   var staffVisible = filterOutSuperAdmin(DATA.staff);
   if (!staffVisible.length) {
-    document.getElementById('staff-table-wrap').innerHTML='<p style="color:var(--txt2)">ยังไม่มีข้อมูลบุคลากร กด รีเฟรช อีกครั้ง</p>';
+    document.getElementById('staff-table-wrap').innerHTML = '<p style="color:var(--txt2)">ยังไม่มีข้อมูลบุคลากร</p>';
     return;
   }
-  var canEdit = isSuperAdmin();
-  var editCols = canEdit ? '<th style="width:100px;text-align:center">จัดการ</th>' : '';
-  var rows = staffVisible.map(s => {
-    var editBtns = canEdit ? `
-      <td style="text-align:center;white-space:nowrap">
-        <button class="btn btn-ghost sa-action-btn" onclick="openEditStaff('${s.id}')" title="แก้ไข">
-          <span class="material-icons" style="font-size:16px">edit</span>
-        </button>
-        <button class="btn btn-danger sa-action-btn" style="margin-left:4px" onclick="openDeleteStaff('${s.id}','${s.name}')" title="ลบ">
-          <span class="material-icons" style="font-size:16px">delete</span>
-        </button>
-      </td>` : '';
-    return `<tr>
-      <td style="font-family:monospace;font-size:.78rem;color:var(--txt2)">${s.id}</td>
+  var roleClasses = {HR:'role-hr',HRR:'role-hrr',staff:'role-staff',head:'role-head',admin:'role-admin',superadmin:'role-superadmin'};
+  var rows = staffVisible.map(s => `
+    <tr>
+      <td style="font-family:monospace;font-size:.8rem">${s.id}</td>
       <td><strong>${s.name}</strong></td>
       <td style="color:var(--txt2);font-size:.82rem">${s.dept}</td>
       <td><span class="badge ${roleClasses[s.role]||'b-office'}">${getRoleLabel(s.role)}</span></td>
-      ${editBtns}
-    </tr>`;
-  }).join('');
+      <td style="text-align:center">
+        <button class="btn btn-ghost" style="padding:5px" title="รีเซ็ตรหัสผ่าน"
+          onclick="doResetPassword('${s.id}','${s.name}')">
+          <span class="material-icons" style="font-size:16px;color:var(--warn)">lock_reset</span>
+        </button>
+      </td>
+    </tr>`).join('');
+
   document.getElementById('staff-table-wrap').innerHTML = `
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>ID</th><th>ชื่อ-สกุล</th><th>กลุ่มงาน</th><th>สิทธิ์</th>${editCols}</tr></thead>
-      <tbody>${rows}</tbody>
-    </table></div>`;
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>ชื่อ-สกุล</th><th>กลุ่มงาน</th><th>สิทธิ์</th><th style="text-align:center">รีเซ็ต</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+    
 }
+
 
 function openEditStaff(staffId) {
   var s = DATA.staff.find(x => x.id === staffId);
@@ -1818,6 +2284,7 @@ async function doSaveEditStaff() {
       closeMo('mo-edit-staff');
       await refreshData();
       renderStaffTable();
+      populateBdStaffSelect();
     } else {
       // fallback: อัพเดทใน local DATA แล้วแสดงผล (ยัง backup ไว้ถ้า backend ยังไม่มี updateStaff)
       var idx = DATA.staff.findIndex(x => x.id === id);
@@ -1908,19 +2375,47 @@ async function loadGroupWFHReports() {
   try {
     var r = await api('getGroupDailyReports', { dept: CU.dept });
     hideLd();
+
     GROUP_REPORTS_CACHE = r.data || [];
     var body = document.getElementById('head-wfh-body');
+
     if (!GROUP_REPORTS_CACHE.length) {
       body.innerHTML = `<p style="padding:60px;text-align:center;color:var(--txt2)">ยังไม่มีรายงาน WFH จากกลุ่มงานวันนี้</p>`;
       return;
     }
-    var html = `<div class="tbl-wrap"><table><thead><tr><th>ชื่อ-สกุล</th><th>ผลงานวันนี้</th><th>ปัญหา</th><th>แผนพรุ่งนี้</th><th style="width:70px;text-align:center">PDF</th></tr></thead><tbody>`;
+
+    var html = `<div class="tbl-wrap">
+    <table>
+    <thead>
+      <tr>
+        <th>ชื่อ-สกุล</th>
+        <th>ผลงานวันนี้</th>
+        <th>ปัญหา</th>
+        <th>แผนพรุ่งนี้</th>
+        <th style="width:70px;text-align:center">PDF</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
     GROUP_REPORTS_CACHE.forEach(rep => {
+
+      var name = esc(rep.name);
+      var workDone = esc(rep.workDone);
+      var problems = esc(rep.problems);
+      var nextPlan = esc(rep.nextPlan);
+
+      var workShort = workDone ? 
+        (workDone.substring(0,100) + (workDone.length>100 ? '...' : '')) 
+        : `<span style="color:#94a3b8">—</span>`;
+
+      var problemsTxt = problems || `<span style="color:#94a3b8">—</span>`;
+      var nextPlanTxt = nextPlan || `<span style="color:#94a3b8">—</span>`;
+
       html += `<tr>
-        <td><strong>${rep.name}</strong></td>
-        <td style="max-width:260px;white-space:pre-wrap">${(rep.workDone||'').substring(0,100)}${(rep.workDone||'').length>100?'...':''}</td>
-        <td>${rep.problems||'<span style="color:#94a3b8">—</span>'}</td>
-        <td>${rep.nextPlan||'<span style="color:#94a3b8">—</span>'}</td>
+        <td><strong>${name}</strong></td>
+        <td style="max-width:260px;white-space:pre-wrap">${workShort}</td>
+        <td>${problemsTxt}</td>
+        <td>${nextPlanTxt}</td>
         <td style="text-align:center">
           <button class="btn btn-ghost" onclick="printSingleDailyReportPDF('${rep.reportId}')" style="padding:6px 10px">
             <span class="material-icons" style="font-size:18px">picture_as_pdf</span>
@@ -1928,42 +2423,195 @@ async function loadGroupWFHReports() {
         </td>
       </tr>`;
     });
+
     html += `</tbody></table></div>`;
     body.innerHTML = html;
-  } catch(e) { hideLd(); toast('โหลดรายงานล้มเหลว','error'); }
+
+  } catch(e) {
+    hideLd();
+    toast('โหลดรายงานล้มเหลว','error');
+  }
 }
 
 function printSingleDailyReportPDF(reportId) {
   var rep = GROUP_REPORTS_CACHE.find(r => r.reportId === reportId);
   if (!rep) return toast('ไม่พบรายงาน','error');
-  var dateStr = new Date().toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  var name = esc(rep.name);
+  var dept = esc(rep.dept);
+  var workDone = esc(rep.workDone);
+  var problems = esc(rep.problems);
+  var nextPlan = esc(rep.nextPlan);
+
+  var dateStr = rep.date 
+    ? new Date(rep.date).toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'})
+    : new Date().toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
   var w = window.open('','_blank','width=850,height=950');
-  w.document.write(`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><title>รายงาน WFH - ${rep.name}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>body{font-family:'Sarabun',sans-serif;padding:40px;font-size:14px;line-height:1.8}
-    .header{text-align:center;border-bottom:4px solid #1e3a8a;padding-bottom:20px;margin-bottom:30px}
-    h1{font-size:20px;color:#1e3a8a}.section{margin-bottom:25px}.label{font-weight:700;color:#1e3a8a}</style></head><body>
-    <div class="header"><h1>รายงานผลการปฏิบัติงาน WFH</h1><h2>สพป.นครราชสีมา เขต 4</h2><p>${dateStr}</p><p style="font-weight:700">${rep.name} — ${rep.dept}</p></div>
-    <div class="section"><div class="label">1. ผลการปฏิบัติงานวันนี้</div><div style="background:#f8fafc;padding:18px;border-radius:10px">${rep.workDone}</div></div>
-    <div class="section"><div class="label">2. ปัญหาและอุปสรรค</div><div style="background:#f8fafc;padding:18px;border-radius:10px">${rep.problems||'— ไม่มี —'}</div></div>
-    <div class="section"><div class="label">3. แผนงานพรุ่งนี้</div><div style="background:#f8fafc;padding:18px;border-radius:10px">${rep.nextPlan||'— ไม่มี —'}</div></div>
-    <div style="margin-top:80px;text-align:center">ลงชื่อ .............................................. (${rep.name})</div>
-    <script>window.onload=()=>window.print()<\/script></body></html>`);
+
+  w.document.write(`<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>รายงาน WFH - ${name}</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Sarabun',sans-serif;padding:40px;font-size:14px;line-height:1.8}
+.header{text-align:center;border-bottom:4px solid #1e3a8a;padding-bottom:20px;margin-bottom:30px}
+h1{font-size:20px;color:#1e3a8a}
+.section{margin-bottom:25px}
+.label{font-weight:700;color:#1e3a8a}
+.box{background:#f8fafc;padding:18px;border-radius:10px}
+.sign{margin-top:80px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>รายงานผลการปฏิบัติงาน WFH</h1>
+  <h2>สพป.นครราชสีมา เขต 4</h2>
+  <p>${dateStr}</p>
+  <p style="font-weight:700">${name} — ${dept}</p>
+</div>
+
+<div class="section">
+  <div class="label">1. ผลการปฏิบัติงานวันนี้</div>
+  <div class="box">${workDone || '— ไม่มี —'}</div>
+</div>
+
+<div class="section">
+  <div class="label">2. ปัญหาและอุปสรรค</div>
+  <div class="box">${problems || '— ไม่มี —'}</div>
+</div>
+
+<div class="section">
+  <div class="label">3. แผนงานพรุ่งนี้</div>
+  <div class="box">${nextPlan || '— ไม่มี —'}</div>
+</div>
+
+<div class="sign">
+  ลงชื่อ .............................................. (${name})
+</div>
+
+<script>
+window.onload = () => window.print();
+<\/script>
+
+</body>
+</html>`);
+
   w.document.close();
 }
 
+// แทนที่ฟังก์ชันเดิม
 function printGroupWFHPDF() {
   if (!GROUP_REPORTS_CACHE.length) return toast('ไม่มีรายงาน WFH','warn');
-  var dateStr = new Date().toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  var rows = GROUP_REPORTS_CACHE.map((rep,i)=>`<tr><td style="text-align:center">${i+1}</td><td>${rep.name}</td><td>${(rep.workDone||'').substring(0,150)}</td><td>${rep.problems||'-'}</td><td>${rep.nextPlan||'-'}</td></tr>`).join('');
+  // เปิด modal เซ็นชื่อก่อน
+  document.getElementById('sign-name-display').innerText  = CU.name;
+  document.getElementById('sign-dept-display').innerText  = CU.dept;
+  document.getElementById('sign-role-display').innerText  = getRoleLabel(ROLE);
+  document.getElementById('sign-date-display').innerText  =
+    new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('sign-remark').value = '';
+  openMo('mo-sign-wfh');
+}
+
+function doSignAndPrintWFH() {
+  var remark  = document.getElementById('sign-remark').value;
+  var dept = esc(CU.dept);
+  var headName = esc(CU?.name);
+
+  var dateStr = new Date().toLocaleDateString('th-TH',{
+    weekday:'long',year:'numeric',month:'long',day:'numeric'
+  });
+
+  var rows = GROUP_REPORTS_CACHE.map((rep,i) => {
+    var name = esc(rep.name);
+    var work = esc(rep.workDone);
+    var prob = esc(rep.problems);
+    var next = esc(rep.nextPlan);
+
+    return `<tr>
+      <td style="text-align:center">${i+1}</td>
+      <td>${name}</td>
+      <td>${(work||'').substring(0,150)}</td>
+      <td>${prob||'-'}</td>
+      <td>${next||'-'}</td>
+    </tr>`;
+  }).join('');
+
+  var remarkRow = remark
+    ? `<div style="margin-top:18px;background:#f0fdf4;border-left:4px solid #16a34a;padding:10px 14px;border-radius:6px;font-size:12px">
+        <strong>หมายเหตุจากผู้รับรอง:</strong> ${esc(remark)}
+       </div>` : '';
+
+  closeMo('mo-sign-wfh');
+
   var w = window.open('','_blank','width=1100,height=900');
-  w.document.write(`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><title>สรุป WFH กลุ่ม</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>body{font-family:'Sarabun',sans-serif;padding:30px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:9px}th{background:#1e3a8a;color:#fff}</style></head><body>
-    <h1 style="text-align:center">สรุปผลการปฏิบัติงาน WFH กลุ่ม ${CU.dept}</h1>
-    <p style="text-align:center">วันที่ ${dateStr}</p>
-    <table><thead><tr><th>ที่</th><th>ชื่อ-สกุล</th><th>ผลงาน</th><th>ปัญหา</th><th>แผนพรุ่งนี้</th></tr></thead><tbody>${rows}</tbody></table>
-    <script>window.onload=()=>window.print()<\/script></body></html>`);
+
+  w.document.write(`<!DOCTYPE html>
+  <html lang="th">
+  <head>
+  <meta charset="UTF-8">
+  <title>สรุป WFH กลุ่ม ${dept}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Sarabun',sans-serif;padding:30px;font-size:13px;color:#0f172a}
+    .header{text-align:center;border-bottom:3px solid #1e3a8a;padding-bottom:16px;margin-bottom:20px}
+    .header h1{font-size:16px;color:#1e3a8a;font-weight:800}
+    .header h2{font-size:14px;font-weight:700;margin-top:4px}
+    .header .meta{font-size:11px;color:#64748b;margin-top:6px}
+    table{width:100%;border-collapse:collapse;font-size:12px}
+    th{background:#1e3a8a;color:#fff;padding:9px;text-align:left}
+    td{border:1px solid #e2e8f0;padding:8px}
+    tbody tr:nth-child(even){background:#f8fafc}
+    .sig-section{margin-top:50px;display:grid;grid-template-columns:1fr 1fr;gap:40px;text-align:center;font-size:12px}
+    .sig-box .sig-line{border-bottom:1px solid #1e3a8a;width:200px;margin:40px auto 6px}
+    .sig-box .sig-name{font-weight:700}
+    .sig-box .sig-role{color:#64748b;font-size:11px;margin-top:2px}
+  </style>
+  </head>
+  <body>
+
+  <div class="header">
+    <h1>สรุปผลการปฏิบัติงาน WFH</h1>
+    <h2>สำนักงานเขตพื้นที่การศึกษาประถมศึกษานครราชสีมา เขต 4</h2>
+    <div class="meta">
+      กลุ่มงาน: <strong>${dept}</strong> |
+      วัน${dateStr} |
+      จำนวน ${GROUP_REPORTS_CACHE.length} คน
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:36px;text-align:center">ที่</th>
+        <th>ชื่อ-สกุล</th>
+        <th>ผลการปฏิบัติงานวันนี้</th>
+        <th>ปัญหาและอุปสรรค</th>
+        <th>แผนงานพรุ่งนี้</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+
+  ${remarkRow}
+
+  <div class="sig-section">
+    <div class="sig-box">
+      <div style="font-size:11px;color:#64748b;margin-bottom:4px">ผู้รับรองรายงาน</div>
+      <div class="sig-line"></div>
+      <div class="sig-name">(${headName})</div>
+      <div class="sig-role">หัวหน้ากลุ่มงาน/ผู้รับรายงาน</div>
+    </div>
+  </div>
+
+  <script>window.onload=()=>window.print()<\/script>
+  </body>
+  </html>`);
+
   w.document.close();
 }
 
@@ -1975,12 +2623,13 @@ function viewStaffDetail(staffId) {
   var att=DATA.todayAtt.find(a=>a.id===staffId);
   document.getElementById('staff-detail-body').innerHTML=`
     <p style="margin-bottom:8px"><strong>ชื่อ-สกุล:</strong> ${staff.name}</p>
-    <p style="margin-bottom:8px"><strong>เลขประจำตัว:</strong> ${staff.id}</p>
+    <!-- แทนที่ตัวแปรด้วยข้อความตรงๆ -->
+<p style="margin-bottom:8px"><strong>เลขประจำตัว:</strong> ****</p>
     <p style="margin-bottom:8px"><strong>กลุ่มงาน:</strong> ${staff.dept||'-'}</p>
     <p style="margin-bottom:8px"><strong>ตำแหน่ง:</strong> ${staff.position||'-'}</p>
     <p style="margin-bottom:12px"><strong>สิทธิ์:</strong> <span class="badge ${roleClasses[staff.role]||'b-office'}">${getRoleLabel(staff.role)}</span></p>
     <hr style="margin:10px 0;border-color:var(--border)">
-    <p style="margin-bottom:8px"><strong>สถานะวันนี้:</strong> ${att?(att.workType==='wfh'?'WFH':att.workType==='leave'?'ลา':'มาออฟฟิศ'):'ยังไม่ลงเวลา'}</p>
+    <p style="margin-bottom:8px"><strong>สถานะวันนี้:</strong> ${att?(att.workType==='wfh'?'WFH':att.workType==='leave'?'ลา':'ปฏิบัติงาน ณ สำนักงาน'):'ยังไม่ลงเวลา'}</p>
     <p style="margin-bottom:8px"><strong>เข้างาน:</strong> ${att?.clockIn||'-'}</p>
     <p><strong>ออกงาน:</strong> ${att?.clockOut||'-'}</p>`;
   openMo('mo-staff-detail');
@@ -2010,6 +2659,92 @@ function closeSB(){
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('sb-ov').style.display='none';
 }
+function esc(text){
+  return String(text || '')
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 </script>
+
+<div class="mo" id="mo-edit-att">
+  <div class="mo-box" style="max-width:420px">
+    <div class="mo-hd"><h3>✏️ แก้ไขการลงเวลา</h3><button class="mo-close" onclick="closeMo('mo-edit-att')">✕</button></div>
+    <div class="mo-body">
+      <input type="hidden" id="ea-staffid">
+      <input type="hidden" id="ea-date">
+      <div style="background:#f8fafc;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.85rem">
+        <strong id="ea-name"></strong><br>
+        <span style="color:var(--txt2);font-size:.78rem" id="ea-dateshow"></span>
+      </div>
+      <div class="fg">
+        <label>สถานะ / ประเภทการมา</label>
+        <select id="ea-worktype" onchange="onEaWorktypeChange()">
+          <option value="office">ปฏิบัติงาน ณ สำนักงาน</option>
+          <option value="wfh">WFH</option>
+          <option value="official_trip">ไปราชการ</option>
+          <option value="leave">ลา</option>
+        </select>
+      </div>
+      <div id="ea-leave-row" style="display:none">
+        <div class="fg"><label>ประเภทการลา</label>
+          <select id="ea-leavetype">
+            <option value="sick">ลาป่วย</option>
+            <option value="personal">ลากิจ</option>
+            <option value="vacation">ลาพักร้อน</option>
+          </select>
+        </div>
+      </div>
+      <div id="ea-time-rows">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fg"><label>เวลาเข้างาน (HH:mm)</label><input type="time" id="ea-in"></div>
+          <div class="fg"><label>เวลาออกงาน (HH:mm)</label><input type="time" id="ea-out"></div>
+        </div>
+      </div>
+ <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost btn-full" onclick="closeMo('mo-edit-att')">ยกเลิก</button>
+        <button class="btn btn-primary btn-full" onclick="doSaveEditAtt()"><span class="material-icons">save</span> บันทึก</button>
+      </div>
+    </div>
+  </div>
+</div> 
+<!-- Modal เซ็นชื่อ Head WFH -->
+<div class="mo" id="mo-sign-wfh">
+  <div class="mo-box" style="max-width:480px">
+    <div class="mo-hd">
+      <h3>✍️ ลงลายเซ็น / ยืนยันรายงาน WFH</h3>
+      <button class="mo-close" onclick="closeMo('mo-sign-wfh')">✕</button>
+    </div>
+    <div class="mo-body">
+      <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:14px;margin-bottom:14px;font-size:.85rem">
+        <div style="font-weight:800;color:#1e40af;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+          <span class="material-icons" style="font-size:16px">info</span> ข้อมูลผู้รับรองรายงาน
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><span style="color:var(--txt2);font-size:.72rem">ชื่อ-สกุล</span><br><strong id="sign-name-display"></strong></div>
+          <div><span style="color:var(--txt2);font-size:.72rem">กลุ่มงาน</span><br><strong id="sign-dept-display"></strong></div>
+          <div><span style="color:var(--txt2);font-size:.72rem">ตำแหน่ง/สิทธิ์</span><br><strong id="sign-role-display"></strong></div>
+          <div><span style="color:var(--txt2);font-size:.72rem">วันที่</span><br><strong id="sign-date-display"></strong></div>
+        </div>
+      </div>
+      <div class="fg">
+        <label>หมายเหตุ / ความเห็นเพิ่มเติม (ถ้ามี)</label>
+        <textarea id="sign-remark" rows="3" placeholder="เช่น รับทราบแล้ว, เห็นชอบ..."></textarea>
+      </div>
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:12px;margin-bottom:14px;font-size:.82rem;color:#15803d">
+        <span class="material-icons" style="font-size:15px;vertical-align:middle">verified</span>
+        การกด "ยืนยันและพิมพ์ PDF" ถือเป็นการลงนามรับรองรายงานนี้
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost btn-full" onclick="closeMo('mo-sign-wfh')">ยกเลิก</button>
+        <button class="btn btn-success btn-full" onclick="doSignAndPrintWFH()">
+          <span class="material-icons">task_alt</span> ยืนยันและพิมพ์ PDF
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
