@@ -849,35 +849,28 @@
     document.getElementById('load-txt').innerText=t; 
   }
 
-  function refreshData() {
-    msg("⏳ ดึงข้อมูลล่าสุด...");
-    google.script.run
-      .withSuccessHandler(d => {
-        if(!d.students) d.students=[];
-        if(!d.attendance) d.attendance=[];
-        if(!d.settings) d.settings={};
-        DATA = d;
-        initFilter();
-        buildMatcher();
-        updateSchoolNameDisplay();
-        msg("");
-        ERROR_COUNT = 0;
-        LAST_ACTIVITY = Date.now();
-      })
-      .withFailureHandler(e => {
-        msg("");
-        console.error("Refresh failed:", e);
-        ERROR_COUNT++;
-        if(ERROR_COUNT >= 3) {
-          showError("การเชื่อมต่อมีปัญหา กรุณาลองใหม่อีกครั้ง");
-        } else {
-          showError("โหลดข้อมูลล่าช้า กรุณารอสักครู่...");
-          // ลองอีกครั้งอัตโนมัติ
-          setTimeout(refreshData, 3000);
-        }
-      })
-      .getAllData();
-  }
+ function refreshData() {
+  msg("⏳ ดึงข้อมูลล่าสุด...");
+  google.script.run
+    .withSuccessHandler(d => {
+      if (!d) { msg(""); showError("ดึงข้อมูลไม่สำเร็จ กรุณารีเฟรช"); return; }
+      DATA.students = d.students || [];
+      DATA.attendance = d.attendance || [];
+      DATA.settings = d.settings || {};
+      if (d.error) showError("Error: " + d.error);
+      initFilter();
+      buildMatcher();
+      updateSchoolNameDisplay();
+      msg("");
+      ERROR_COUNT = 0;
+      LAST_ACTIVITY = Date.now();
+    })
+    .withFailureHandler(e => {
+      msg("");
+      showError("เชื่อมต่อไม่ได้: " + e.message);
+    })
+    .getAllData();
+}
 
   function initFilter() {
     var cls = [...new Set(DATA.students.map(s=>s[2]))].sort();
