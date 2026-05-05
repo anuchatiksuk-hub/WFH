@@ -3,61 +3,68 @@
 <head>
   <title>Smart School</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: sans-serif; background: #f1f5f9; }
-    
-    #setup { 
-      display: flex; flex-direction: column; align-items: center; 
-      justify-content: center; height: 100vh; gap: 15px; padding: 20px;
-    }
-    #setup h2 { color: #2563eb; }
-    #setup input { 
-      padding: 12px; border: 2px solid #2563eb; border-radius: 8px; 
-      width: 100%; max-width: 400px; font-size: 1rem; 
-    }
-    #setup button { 
-      padding: 12px 30px; background: #2563eb; color: white; 
-      border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; 
-    }
-    
-    #app { display: none; width: 100%; height: 100vh; }
-    iframe { width: 100%; height: 100%; border: none; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Sarabun',sans-serif; background:#f1f5f9; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+    .box { background:white; border-radius:16px; padding:40px; max-width:450px; width:100%; box-shadow:0 4px 20px rgba(0,0,0,0.1); text-align:center; }
+    h2 { color:#2563eb; margin-bottom:8px; font-size:1.8rem; }
+    p { color:#64748b; margin-bottom:25px; }
+    input { width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:8px; font-size:0.95rem; font-family:'Sarabun',sans-serif; margin-bottom:12px; outline:none; }
+    input:focus { border-color:#2563eb; }
+    .btn { width:100%; padding:14px; background:#2563eb; color:white; border:none; border-radius:8px; font-size:1.1rem; font-family:'Sarabun',sans-serif; cursor:pointer; margin-bottom:10px; }
+    .btn:hover { background:#1d4ed8; }
+    .btn-outline { background:white; color:#2563eb; border:2px solid #2563eb; }
+    .btn-outline:hover { background:#eff6ff; }
+    small { color:#94a3b8; font-size:0.8rem; display:block; margin-top:15px; }
+    .saved { background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:12px; margin-bottom:15px; display:none; }
+    .saved p { color:#166534; margin:0; font-size:0.9rem; }
   </style>
 </head>
 <body>
-
-  <div id="setup">
+  <div class="box">
     <h2>🏫 Smart School</h2>
-    <p style="color:#64748b; text-align:center;">กรอก URL ของ Apps Script เพื่อเริ่มใช้งาน</p>
-    <input type="text" id="url-input" placeholder="https://script.google.com/macros/s/.../exec">
-    <button onclick="launch()">🚀 เปิดระบบ</button>
-    <small style="color:#94a3b8; text-align:center;">URL จะถูกบันทึกในเครื่องนี้ ไม่ต้องกรอกใหม่ทุกครั้ง</small>
-  </div>
+    <p>ระบบเช็คชื่อด้วย AI จดจำใบหน้า</p>
 
-  <div id="app">
-    <iframe id="frame" allow="camera; microphone"></iframe>
+    <div class="saved" id="saved-box">
+      <p>✅ พบ URL ที่บันทึกไว้แล้ว</p>
+    </div>
+
+    <input type="text" id="url-input" placeholder="https://script.google.com/macros/s/.../exec">
+    
+    <button class="btn" onclick="openApp()">🚀 เปิดระบบ (Tab ใหม่)</button>
+    <button class="btn btn-outline" onclick="clearUrl()">🗑️ ล้าง URL</button>
+
+    <small>⚠️ ต้องเปิดใน Tab ใหม่เพื่อให้กล้องทำงานได้<br>URL จะถูกบันทึกในเครื่องนี้</small>
   </div>
 
 <script>
-  // โหลด URL ที่บันทึกไว้
-  var saved = localStorage.getItem('apps_script_url');
+  var saved = localStorage.getItem('gas_url');
   if (saved) {
     document.getElementById('url-input').value = saved;
-    launch();
+    document.getElementById('saved-box').style.display = 'block';
   }
 
-  function launch() {
+  function openApp() {
     var url = document.getElementById('url-input').value.trim();
     if (!url || !url.includes('script.google.com')) {
-      alert('กรุณากรอก URL ของ Apps Script ให้ถูกต้อง');
+      alert('กรุณากรอก URL ของ Apps Script ให้ถูกต้อง\nต้องขึ้นต้นด้วย https://script.google.com/macros/s/...');
       return;
     }
-    localStorage.setItem('apps_script_url', url);
-    document.getElementById('frame').src = url;
-    document.getElementById('setup').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
+    localStorage.setItem('gas_url', url);
+    window.open(url, '_blank');
   }
+
+  function clearUrl() {
+    localStorage.removeItem('gas_url');
+    document.getElementById('url-input').value = '';
+    document.getElementById('saved-box').style.display = 'none';
+  }
+
+  // กด Enter เพื่อเปิด
+  document.getElementById('url-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') openApp();
+  });
 </script>
 </body>
 </html>
