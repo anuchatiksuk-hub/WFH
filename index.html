@@ -574,28 +574,23 @@
       refreshDataSilent();
     }, 300000); // 5 นาที
   }
-
-  function refreshDataSilent() {
-    google.script.run
-      .withSuccessHandler(d => {
-        if(!d.students) d.students=[];
-        if(!d.attendance) d.attendance=[];
-        if(!d.settings) d.settings={};
-        DATA = d;
-        buildMatcher();
-        updateSchoolNameDisplay();
-        console.log("Data refreshed at " + new Date().toLocaleTimeString());
-        ERROR_COUNT = 0; // รีเซ็ต error count
-      })
-      .withFailureHandler(e => {
-        console.error("Auto refresh failed:", e);
-        ERROR_COUNT++;
-        if(ERROR_COUNT >= 3) {
-          showError("การเชื่อมต่อมีปัญหา กรุณารีเฟรชหน้าเว็บ");
-        }
-      })
-      .getAllData();
-  }
+function refreshDataSilent() {
+  google.script.run
+    .withSuccessHandler(d => {
+      if(!d) return;
+      DATA.students = d.students || [];
+      DATA.attendance = d.attendance || [];
+      DATA.settings = d.settings || {};
+      buildMatcher();
+      updateSchoolNameDisplay();
+      ERROR_COUNT = 0;
+    })
+    .withFailureHandler(e => {
+      ERROR_COUNT++;
+      if(ERROR_COUNT >= 3) showError("การเชื่อมต่อมีปัญหา กรุณารีเฟรชหน้าเว็บ");
+    })
+    .getAllData();
+}
 
   // === HEALTH CHECK ===
   function startHealthCheck() {
@@ -1402,24 +1397,24 @@
       }).deleteStudent(id);
   }
   
-  // === FACE API ===
-  function buildMatcher() {
-    var labeled = [];
-    var threshold = DATA.settings.faceMatchThreshold || 0.6;
-    
-    DATA.students.forEach(s => {
-       if(s[3]) { 
-           try { 
-               labeled.push(new faceapi.LabeledFaceDescriptors(
-                 s[0]+"#"+s[1]+"#"+s[2], 
-                 [new Float32Array(Object.values(JSON.parse(s[3])))]
-               )); 
-           } catch(e){} 
-       }
-    });
-    
-    if(labeled.length>0) matcher = new faceapi.FaceMatcher(labeled, threshold);
-  }
+function buildMatcher() {
+  var labeled = [];
+  var threshold = DATA.settings.faceMatchThreshold || 0.6;
+  DATA.students.forEach(s => {
+    if(s[3]) {
+      try {
+        var parsed = JSON.parse(s[3]);
+        // รองรับทั้ง Array และ Object
+        var arr = Array.isArray(parsed) ? parsed : Object.values(parsed);
+        labeled.push(new faceapi.LabeledFaceDescriptors(
+          s[0]+"#"+s[1]+"#"+s[2],
+          [new Float32Array(arr)]
+        ));
+      } catch(e){}
+    }
+  });
+  if(labeled.length > 0) matcher = new faceapi.FaceMatcher(labeled, threshold);
+}
   
   var stream=null, interval=null;
   
