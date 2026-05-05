@@ -1,11 +1,63 @@
 <!DOCTYPE html>
 <html>
-<head><title>Smart School</title></head>
-<body style="margin:0; padding:0;">
-  <iframe 
-    src="https://script.google.com/a/macros/korat4.go.th/s/AKfycbyhthOeb9XGDyrXgCRu0LNsatlYUn30JzjD3xWL1xu1z5oaD-4uHuowhZyn5A9k7KQW_Q/exec"
-    style="width:100%; height:100vh; border:none;"
-    allow="camera; microphone; geolocation">
-  </iframe>
+<head>
+  <title>Smart School</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: sans-serif; background: #f1f5f9; }
+    
+    #setup { 
+      display: flex; flex-direction: column; align-items: center; 
+      justify-content: center; height: 100vh; gap: 15px; padding: 20px;
+    }
+    #setup h2 { color: #2563eb; }
+    #setup input { 
+      padding: 12px; border: 2px solid #2563eb; border-radius: 8px; 
+      width: 100%; max-width: 400px; font-size: 1rem; 
+    }
+    #setup button { 
+      padding: 12px 30px; background: #2563eb; color: white; 
+      border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; 
+    }
+    
+    #app { display: none; width: 100%; height: 100vh; }
+    iframe { width: 100%; height: 100%; border: none; }
+  </style>
+</head>
+<body>
+
+  <div id="setup">
+    <h2>🏫 Smart School</h2>
+    <p style="color:#64748b; text-align:center;">กรอก URL ของ Apps Script เพื่อเริ่มใช้งาน</p>
+    <input type="text" id="url-input" placeholder="https://script.google.com/macros/s/.../exec">
+    <button onclick="launch()">🚀 เปิดระบบ</button>
+    <small style="color:#94a3b8; text-align:center;">URL จะถูกบันทึกในเครื่องนี้ ไม่ต้องกรอกใหม่ทุกครั้ง</small>
+  </div>
+
+  <div id="app">
+    <iframe id="frame" allow="camera; microphone"></iframe>
+  </div>
+
+<script>
+  // โหลด URL ที่บันทึกไว้
+  var saved = localStorage.getItem('apps_script_url');
+  if (saved) {
+    document.getElementById('url-input').value = saved;
+    launch();
+  }
+
+  function launch() {
+    var url = document.getElementById('url-input').value.trim();
+    if (!url || !url.includes('script.google.com')) {
+      alert('กรุณากรอก URL ของ Apps Script ให้ถูกต้อง');
+      return;
+    }
+    localStorage.setItem('apps_script_url', url);
+    document.getElementById('frame').src = url;
+    document.getElementById('setup').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+  }
+</script>
 </body>
 </html>
