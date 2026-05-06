@@ -166,13 +166,32 @@ function loadCfg(){ var c=localStorage.getItem('ss_cfg3'); if(c) CFG=JSON.parse(
 function saveCfg(){ localStorage.setItem('ss_cfg3',JSON.stringify(CFG)); }
 function resetApp(){ if(!confirm('ล้างการตั้งค่า?')) return; localStorage.removeItem('ss_cfg3'); location.reload(); }
 
-async function apiPost(body){
-  var r=await fetch(CFG.url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(!r.ok) throw new Error('HTTP '+r.status);
-  var j=await r.json();
-  if(!j.success) throw new Error(j.error||'ไม่สำเร็จ');
+// ============================================================
+// แก้ไขหลัก: ใช้ GET + query string แทน POST เพื่อแก้ CORS
+// Apps Script รองรับ GET ได้โดยไม่มีปัญหา redirect/CORS
+// ============================================================
+async function apiCall(body) {
+  var params = new URLSearchParams();
+  params.set('action', body.action);
+  params.set('sheet', body.sheet);
+
+  if (body.values !== undefined) {
+    params.set('values', JSON.stringify(body.values));
+  }
+  if (body.range !== undefined) {
+    params.set('range', body.range);
+  }
+
+  var url = CFG.url + '?' + params.toString();
+  var r = await fetch(url, { redirect: 'follow' });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  var j = await r.json();
+  if (!j.success) throw new Error(j.error || 'ไม่สำเร็จ');
   return j;
 }
+
+// alias เดิม ให้ชี้ไป apiCall
+function apiPost(body){ return apiCall(body); }
 
 function startApp(){
   var url=document.getElementById('cfg-url').value.trim();
@@ -201,11 +220,11 @@ async function initApp(){
 async function loadData(){
   load('⏳ โหลดข้อมูล...');
   try{
-    var r1=await apiPost({action:'get',sheet:'Students'});
+    var r1=await apiCall({action:'get',sheet:'Students'});
     var rows=(r1.values||[]).slice(1);
     DATA.students=rows.map((r,i)=>({id:String(r[0]||''),name:String(r[1]||''),cls:String(r[2]||''),desc:String(r[3]||''),rowNum:i+2}));
 
-    var r2=await apiPost({action:'get',sheet:'Attendance'});
+    var r2=await apiCall({action:'get',sheet:'Attendance'});
     var arows=(r2.values||[]).slice(1);
     DATA.attendance=arows.map((r,i)=>({ts:String(r[0]||''),date:String(r[1]||''),id:String(r[2]||''),name:String(r[3]||''),cls:String(r[4]||''),status:String(r[5]||''),rowNum:i+2}));
 
@@ -228,7 +247,7 @@ function renderDash(){
   var p=0,l=0,ab=0,total=0;
   var html='<tr><th>รหัส</th><th>ชื่อ</th><th>ห้อง</th><th>เวลา</th><th>สถานะ/จัดการ</th></tr>';
   DATA.students.forEach(s=>{
-    if(search&&!s.name.includes(search)&&!s.id.includes(search)) return;
+    if(search&&!s.name.toLowerCase().includes(search)&&!s.id.includes(search)) return;
     total++;
     var rec=map[s.id], badge='', time='-';
     if(rec){
@@ -267,10 +286,10 @@ async function saveCheckIn(id,name,cls,status){
     String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
   var existing=DATA.attendance.find(a=>a.id==id&&a.date==date);
   if(existing){
-    await apiPost({action:'update',sheet:'Attendance',range:`A${existing.rowNum}:F${existing.rowNum}`,values:[ts,date,id,name,cls,status]});
+    await apiCall({action:'update',sheet:'Attendance',range:`A${existing.rowNum}:F${existing.rowNum}`,values:[ts,date,id,name,cls,status]});
     toast('อัพเดต: '+name+' → '+status);
   } else {
-    await apiPost({action:'append',sheet:'Attendance',values:[ts,date,id,name,cls,status]});
+    await apiCall({action:'append',sheet:'Attendance',values:[ts,date,id,name,cls,status]});
     toast('บันทึก: '+name+' → '+status);
   }
 }
@@ -283,7 +302,7 @@ async function addStudent(){
   if(DATA.students.find(s=>s.id==id)){ toast('รหัสนี้มีอยู่แล้ว',true); return; }
   load('บันทึก...');
   try{
-    await apiPost({action:'append',sheet:'Students',values:[id,name,cls,'','']});
+    await apiCall({action:'append',sheet:'Students',values:[id,name,cls,'','']});
     document.getElementById('add-id').value='';
     document.getElementById('add-name').value='';
     document.getElementById('add-cls').value='';
@@ -388,7 +407,7 @@ async function doReg(){
   load('บันทึกใบหน้า...');
   try{
     var desc=JSON.stringify(Array.from(det.descriptor));
-    await apiPost({action:'update',sheet:'Students',range:`D${s.rowNum}`,values:[desc]});
+    await apiCall({action:'update',sheet:'Students',range:`D${s.rowNum}`,values:[desc]});
     await loadData(); toast('ลงทะเบียนใบหน้า '+s.name+' เรียบร้อย');
   }catch(e){ toast('Error: '+e.message,true); }
   load('');
