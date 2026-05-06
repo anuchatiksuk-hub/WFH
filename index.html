@@ -404,53 +404,62 @@ async function doReg(){
   if(!val){ toast('เลือกชื่อก่อน',true); return; }
   var s=JSON.parse(val);
   var video=document.getElementById('v-reg');
+  var status=document.getElementById('reg-status');
 
-  // ตรวจสอบว่ากล้องพร้อมแล้ว
   if(!video.srcObject || video.readyState < 2){
     toast('กล้องยังไม่พร้อม รอสักครู่',true); return;
   }
 
-  // แจ้ง user ว่ากำลัง detect
-  document.getElementById('reg-status').innerText='🔍 กำลังตรวจจับใบหน้า...';
+  status.innerText='🔍 กำลังตรวจจับใบหน้า...';
 
-  // ลอง detect หลายครั้งถ้าไม่เจอ (เผื่อ model ยังโหลดไม่เสร็จ)
+  // วาด video ลง canvas ชั่วคราว เพื่อให้ faceapi detect ได้แน่นอน
+  // (หลีกเลี่ยงปัญหา CSS transform mirror บนบางเบราว์เซอร์)
+  var offCanvas = document.createElement('canvas');
+  offCanvas.width  = video.videoWidth  || 640;
+  offCanvas.height = video.videoHeight || 480;
+  var ctx = offCanvas.getContext('2d');
+
   var det = null;
-  for(var attempt=0; attempt<3; attempt++){
+  var opts = new faceapi.TinyFaceDetectorOptions({inputSize:416, scoreThreshold:0.3});
+
+  for(var attempt=0; attempt<4; attempt++){
+    // ถ่าย frame ปัจจุบันลง canvas
+    ctx.drawImage(video, 0, 0, offCanvas.width, offCanvas.height);
+
     try{
       det = await faceapi
-        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({inputSize:320, scoreThreshold:0.4}))
+        .detectSingleFace(offCanvas, opts)
         .withFaceLandmarks()
         .withFaceDescriptor();
     }catch(e){}
+
     if(det) break;
-    // รอ 500ms แล้วลองใหม่
-    await new Promise(res=>setTimeout(res,500));
-    document.getElementById('reg-status').innerText='🔍 พยายามครั้งที่ '+(attempt+2)+'...';
+    await new Promise(res=>setTimeout(res,600));
+    status.innerText='🔍 พยายามครั้งที่ '+(attempt+2)+'/4 — เล็งหน้าให้ตรงกล้อง';
   }
 
   if(!det){
-    document.getElementById('reg-status').innerText='❌ ไม่พบใบหน้า — เล็งหน้าให้ตรงกล้อง แสงสว่างพอ แล้วกดใหม่';
+    status.innerText='❌ ไม่พบใบหน้า — ลองใหม่อีกครั้ง (แสงสว่างพอ / ไม่มีอะไรบัง)';
     toast('ไม่พบใบหน้าในกล้อง',true);
     return;
   }
 
-  document.getElementById('reg-status').innerText='✅ พบใบหน้า กำลังบันทึก...';
+  status.innerText='✅ พบใบหน้า กำลังบันทึก...';
   load('บันทึกใบหน้า...');
   try{
     var desc = JSON.stringify(Array.from(det.descriptor));
-    // ใช้ range แบบ A1 notation ที่ถูกต้อง: "D2:D2" ไม่ใช่ "D2"
-    var row = s.rowNum;
+    var row  = s.rowNum;
     await apiCall({
       action: 'update',
-      sheet: 'Students',
-      range: `D${row}:D${row}`,
-      values: [desc]  // doGet ของ Apps Script รับ values เป็น array แบน แถวเดียว
+      sheet:  'Students',
+      range:  'D'+row+':D'+row,
+      values: [desc]
     });
     await loadData();
-    document.getElementById('reg-status').innerText='✅ บันทึกใบหน้า '+s.name+' เรียบร้อย!';
+    status.innerText='✅ บันทึกใบหน้า '+s.name+' เรียบร้อย!';
     toast('ลงทะเบียนใบหน้า '+s.name+' เรียบร้อย');
   }catch(e){
-    document.getElementById('reg-status').innerText='❌ Error: '+e.message;
+    status.innerText='❌ Error: '+e.message;
     toast('Error: '+e.message,true);
   }
   load('');
