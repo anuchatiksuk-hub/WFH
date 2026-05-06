@@ -10,18 +10,14 @@
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     body{font-family:'Sarabun',sans-serif;background:#f1f5f9;color:#0f172a}
     .btn{padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-family:'Sarabun';font-size:1rem;font-weight:600;transition:.2s}
-    .btn-p{background:#2563eb;color:white}
-    .btn-g{background:#22c55e;color:white}
-    .btn-r{background:#ef4444;color:white}
-    .btn-w{background:#f59e0b;color:white}
+    .btn-p{background:#2563eb;color:white}.btn-g{background:#22c55e;color:white}
+    .btn-r{background:#ef4444;color:white}.btn-w{background:#f59e0b;color:white}
     .btn:hover{opacity:.85}
-    input,select{padding:10px 12px;border:1.5px solid #cbd5e1;border-radius:8px;width:100%;font-family:'Sarabun';font-size:0.95rem;outline:none;background:white}
+    input,select{padding:10px 12px;border:1.5px solid #cbd5e1;border-radius:8px;width:100%;font-family:'Sarabun';font-size:.95rem;outline:none;background:white}
     input:focus,select:focus{border-color:#2563eb}
     .card{background:white;border-radius:14px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:16px}
     .badge{padding:4px 10px;border-radius:20px;font-size:.8rem;font-weight:600;display:inline-block}
-    .ok{background:#dcfce7;color:#15803d}
-    .late{background:#fef3c7;color:#b45309}
-    .abs{background:#fee2e2;color:#b91c1c}
+    .ok{background:#dcfce7;color:#15803d}.late{background:#fef3c7;color:#b45309}.abs{background:#fee2e2;color:#b91c1c}
     table{width:100%;border-collapse:collapse;font-size:.9rem}
     th,td{padding:10px 8px;border-bottom:1px solid #f1f5f9;text-align:left}
     th{background:#f8fafc;color:#475569;font-size:.8rem;text-transform:uppercase}
@@ -32,7 +28,7 @@
     .spin{width:40px;height:40px;border:4px solid #e2e8f0;border-top-color:#2563eb;border-radius:50%;animation:spin 1s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
     #setup{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-    .setup-box{background:white;border-radius:16px;padding:36px;max-width:480px;width:100%;box-shadow:0 4px 20px rgba(0,0,0,.1)}
+    .setup-box{background:white;border-radius:16px;padding:36px;max-width:500px;width:100%;box-shadow:0 4px 20px rgba(0,0,0,.1)}
     .setup-box h2{color:#2563eb;margin-bottom:6px;font-size:1.6rem}
     .setup-box p{color:#64748b;margin-bottom:20px}
     .field{margin-bottom:14px}
@@ -59,31 +55,24 @@
   <p id="load-txt" style="margin-top:12px;font-weight:600;color:#64748b">กำลังโหลด...</p>
 </div>
 
-<!-- Setup Screen -->
 <div id="setup">
   <div class="setup-box">
     <h2>🏫 Smart School</h2>
-    <p>ระบบเช็คชื่อ AI ผ่าน Google Sheets</p>
+    <p>กรอกแค่ Apps Script URL — ไม่ต้องใช้ API Key</p>
     <div class="field">
-      <label>Google Sheets ID</label>
-      <input id="cfg-sheet" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms">
-      <small style="color:#94a3b8;font-size:.8rem;margin-top:4px;display:block">จาก URL: docs.google.com/spreadsheets/d/<b>ID</b>/edit</small>
-    </div>
-    <div class="field">
-      <label>Google API Key</label>
-      <input id="cfg-key" placeholder="AIzaSy...">
-      <small style="color:#94a3b8;font-size:.8rem;margin-top:4px;display:block">ได้จาก Google Cloud Console → APIs → Credentials</small>
+      <label>Apps Script Web App URL</label>
+      <input id="cfg-url" placeholder="https://script.google.com/macros/s/.../exec">
+      <small style="color:#94a3b8;font-size:.8rem;margin-top:4px;display:block">Apps Script → Deploy → Manage deployments → คัดลอก URL</small>
     </div>
     <div class="field">
       <label>ชื่อโรงเรียน</label>
       <input id="cfg-name" placeholder="Smart School">
     </div>
     <button class="btn btn-p" style="width:100%;margin-top:8px" onclick="startApp()">🚀 เริ่มใช้งาน</button>
-    <p style="font-size:.8rem;color:#94a3b8;margin-top:12px;text-align:center">ข้อมูลถูกบันทึกในเครื่องนี้เท่านั้น</p>
+    <p style="font-size:.8rem;color:#94a3b8;margin-top:12px;text-align:center">บันทึกในเครื่องนี้ ไม่ต้องกรอกใหม่ทุกครั้ง</p>
   </div>
 </div>
 
-<!-- Main App -->
 <div id="app">
   <div style="background:white;border-bottom:1px solid #e2e8f0;padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
     <span id="app-title" style="font-weight:700;color:#2563eb;font-size:1.1rem">🏫 Smart School</span>
@@ -96,7 +85,6 @@
     <button onclick="go('reg',this)">🔖 ลงทะเบียนหน้า</button>
   </nav>
 
-  <!-- DASH -->
   <div id="dash" class="page active">
     <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
       <input type="date" id="sel-date" style="width:auto;min-width:150px;font-weight:600;color:#2563eb;background:#eff6ff;border-color:#2563eb">
@@ -115,7 +103,6 @@
     </div>
   </div>
 
-  <!-- SCAN -->
   <div id="scan" class="page">
     <div class="cam-wrap">
       <video id="v-scan" autoplay playsinline muted></video>
@@ -131,7 +118,6 @@
     </div>
   </div>
 
-  <!-- ADD -->
   <div id="add" class="page">
     <div class="card">
       <h3 style="margin-bottom:14px">➕ เพิ่มนักเรียน</h3>
@@ -149,7 +135,6 @@
     </div>
   </div>
 
-  <!-- REG -->
   <div id="reg" class="page">
     <div style="display:flex;gap:16px;flex-wrap:wrap">
       <div style="flex:1;min-width:240px">
@@ -173,363 +158,265 @@
 </div>
 
 <script>
-var CFG = {};
-var DATA = { students:[], attendance:[] };
-var MATCHER = null;
-var stream = null, aiInterval = null;
-var currentFace = null;
-const MODEL_URL = 'https://cdn.jsdelivr.net/gh/cgarciagl/face-api.js@0.22.2/weights';
-const SHEET_STUDENTS = 'Students';
-const SHEET_ATTEND = 'Attendance';
+var CFG={}, DATA={students:[],attendance:[]}, MATCHER=null;
+var stream=null, aiInterval=null, currentFace=null;
+const MODEL_URL='https://cdn.jsdelivr.net/gh/cgarciagl/face-api.js@0.22.2/weights';
 
-// ===== SETUP =====
-function loadCfg() {
-  var c = localStorage.getItem('ss_cfg');
-  if (c) CFG = JSON.parse(c);
-}
-function saveCfg() {
-  localStorage.setItem('ss_cfg', JSON.stringify(CFG));
-}
-function startApp() {
-  var sid = document.getElementById('cfg-sheet').value.trim();
-  var key = document.getElementById('cfg-key').value.trim();
-  var name = document.getElementById('cfg-name').value.trim() || 'Smart School';
-  if (!sid || !key) { toast('กรุณากรอก Sheet ID และ API Key', true); return; }
-  CFG = { sheetId: sid, apiKey: key, schoolName: name };
-  saveCfg();
-  initApp();
-}
-function resetApp() {
-  if (!confirm('ล้างการตั้งค่า?')) return;
-  localStorage.removeItem('ss_cfg');
-  location.reload();
+function loadCfg(){ var c=localStorage.getItem('ss_cfg3'); if(c) CFG=JSON.parse(c); }
+function saveCfg(){ localStorage.setItem('ss_cfg3',JSON.stringify(CFG)); }
+function resetApp(){ if(!confirm('ล้างการตั้งค่า?')) return; localStorage.removeItem('ss_cfg3'); location.reload(); }
+
+async function apiPost(body){
+  var r=await fetch(CFG.url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  var j=await r.json();
+  if(!j.success) throw new Error(j.error||'ไม่สำเร็จ');
+  return j;
 }
 
-// ===== SHEETS API =====
-async function sheetsGet(range) {
-  var url = `https://sheets.googleapis.com/v4/spreadsheets/${CFG.sheetId}/values/${range}?key=${CFG.apiKey}`;
-  var r = await fetch(url);
-  if (!r.ok) throw new Error(await r.text());
-  return (await r.json()).values || [];
+function startApp(){
+  var url=document.getElementById('cfg-url').value.trim();
+  var name=document.getElementById('cfg-name').value.trim()||'Smart School';
+  if(!url||!url.includes('script.google.com')){ toast('URL ไม่ถูกต้อง',true); return; }
+  CFG={url,schoolName:name}; saveCfg(); initApp();
 }
 
-async function sheetsAppend(range, values) {
-  var url = `https://sheets.googleapis.com/v4/spreadsheets/${CFG.sheetId}/values/${range}:append?valueInputOption=USER_ENTERED&key=${CFG.apiKey}`;
-  var r = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ values })
-  });
-  if (!r.ok) throw new Error(await r.text());
-  return await r.json();
-}
-
-async function sheetsUpdate(range, values) {
-  var url = `https://sheets.googleapis.com/v4/spreadsheets/${CFG.sheetId}/values/${range}?valueInputOption=USER_ENTERED&key=${CFG.apiKey}`;
-  var r = await fetch(url, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ values })
-  });
-  if (!r.ok) throw new Error(await r.text());
-  return await r.json();
-}
-
-// ===== INIT =====
-async function initApp() {
-  document.getElementById('setup').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  document.getElementById('app-title').innerText = '🏫 ' + CFG.schoolName;
+async function initApp(){
+  document.getElementById('setup').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('app-title').innerText='🏫 '+CFG.schoolName;
   load('⏳ โหลด AI...');
-  try {
+  try{
     await Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
       faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
       faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
     ]);
-  } catch(e) { toast('โหลด AI ไม่สำเร็จ', true); }
+  }catch(e){ toast('โหลด AI ไม่สำเร็จ',true); }
   setToday();
   await loadData();
   load('');
 }
 
-// ===== LOAD DATA =====
-async function loadData() {
+async function loadData(){
   load('⏳ โหลดข้อมูล...');
-  try {
-    var rows = await sheetsGet(SHEET_STUDENTS + '!A2:E');
-    DATA.students = rows.map(r => ({
-      id: r[0]||'', name: r[1]||'', cls: r[2]||'',
-      desc: r[3]||'', photo: r[4]||''
-    }));
-    var arows = await sheetsGet(SHEET_ATTEND + '!A2:F');
-    DATA.attendance = arows.map(r => ({
-      ts: r[0]||'', date: r[1]||'', id: r[2]||'',
-      name: r[3]||'', cls: r[4]||'', status: r[5]||''
-    }));
-    buildMatcher();
-    renderDash();
-    renderStudents();
-    fillRegSel();
-  } catch(e) {
-    toast('โหลดข้อมูลไม่สำเร็จ: ' + e.message, true);
-  }
+  try{
+    var r1=await apiPost({action:'get',sheet:'Students'});
+    var rows=(r1.values||[]).slice(1);
+    DATA.students=rows.map((r,i)=>({id:String(r[0]||''),name:String(r[1]||''),cls:String(r[2]||''),desc:String(r[3]||''),rowNum:i+2}));
+
+    var r2=await apiPost({action:'get',sheet:'Attendance'});
+    var arows=(r2.values||[]).slice(1);
+    DATA.attendance=arows.map((r,i)=>({ts:String(r[0]||''),date:String(r[1]||''),id:String(r[2]||''),name:String(r[3]||''),cls:String(r[4]||''),status:String(r[5]||''),rowNum:i+2}));
+
+    buildMatcher(); renderDash(); renderStudents(); fillRegSel();
+  }catch(e){ toast('โหลดไม่สำเร็จ: '+e.message,true); }
   load('');
 }
 
-// ===== DASHBOARD =====
-function setToday() {
-  var d = new Date();
-  document.getElementById('sel-date').value = d.getFullYear()+'-'+
-    String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function setToday(){
+  var d=new Date();
+  document.getElementById('sel-date').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   renderDash();
 }
 
-function renderDash() {
-  var date = document.getElementById('sel-date').value;
-  var search = document.getElementById('search').value.toLowerCase();
-  var map = {};
-  DATA.attendance.forEach(a => { if(a.date==date) map[a.id]=a; });
-  var p=0,l=0,a=0,total=0;
-  var html = '<tr><th>รหัส</th><th>ชื่อ</th><th>ห้อง</th><th>เวลา</th><th>สถานะ</th></tr>';
-  DATA.students.forEach(s => {
-    if(search && !s.name.includes(search) && !s.id.includes(search)) return;
+function renderDash(){
+  var date=document.getElementById('sel-date').value;
+  var search=(document.getElementById('search').value||'').toLowerCase();
+  var map={};
+  DATA.attendance.forEach(a=>{ if(a.date==date) map[a.id]=a; });
+  var p=0,l=0,ab=0,total=0;
+  var html='<tr><th>รหัส</th><th>ชื่อ</th><th>ห้อง</th><th>เวลา</th><th>สถานะ/จัดการ</th></tr>';
+  DATA.students.forEach(s=>{
+    if(search&&!s.name.includes(search)&&!s.id.includes(search)) return;
     total++;
-    var rec = map[s.id];
-    var badge='', time='-';
-    if(rec) {
-      time = rec.ts.substring(11,16)||'-';
+    var rec=map[s.id], badge='', time='-';
+    if(rec){
+      time=rec.ts.length>=16?rec.ts.substring(11,16):'-';
       if(rec.status=='มาเรียน'){p++;badge='<span class="badge ok">มาเรียน</span>';}
       else if(rec.status=='สาย'){l++;badge='<span class="badge late">สาย</span>';}
-      else{a++;badge='<span class="badge abs">'+rec.status+'</span>';}
+      else{ab++;badge='<span class="badge abs">'+rec.status+'</span>';}
+      badge+=` <button class="btn" style="padding:3px 8px;font-size:.75rem;background:#6b7280;color:white" onclick="editCheck('${s.id}','${s.name}','${s.cls}')">✏️</button>`;
     } else {
       badge=`<button class="btn btn-g" style="padding:3px 8px;font-size:.75rem" onclick="quickCheck('${s.id}','${s.name}','${s.cls}','มาเรียน')">มา</button>
              <button class="btn btn-w" style="padding:3px 8px;font-size:.75rem" onclick="quickCheck('${s.id}','${s.name}','${s.cls}','สาย')">สาย</button>
              <button class="btn btn-r" style="padding:3px 8px;font-size:.75rem" onclick="quickCheck('${s.id}','${s.name}','${s.cls}','ขาด')">ขาด</button>`;
     }
-    html += `<tr><td>${s.id}</td><td>${s.name}</td><td>${s.cls}</td><td>${time}</td><td>${badge}</td></tr>`;
+    html+=`<tr><td>${s.id}</td><td>${s.name}</td><td>${s.cls}</td><td>${time}</td><td>${badge}</td></tr>`;
   });
-  document.getElementById('tb-dash').innerHTML = html;
-  document.getElementById('s-total').innerText = total;
-  document.getElementById('s-p').innerText = p;
-  document.getElementById('s-l').innerText = l;
-  document.getElementById('s-a').innerText = a;
+  document.getElementById('tb-dash').innerHTML=html;
+  document.getElementById('s-total').innerText=total;
+  document.getElementById('s-p').innerText=p;
+  document.getElementById('s-l').innerText=l;
+  document.getElementById('s-a').innerText=ab;
 }
 
-async function quickCheck(id, name, cls, status) {
-  await saveCheckIn(id, name, cls, status);
-  await loadData();
+async function editCheck(id,name,cls){
+  var s=prompt('สถานะใหม่ (มาเรียน/สาย/ป่วย/ลา/ขาด):'); if(!s) return;
+  load('บันทึก...'); try{ await saveCheckIn(id,name,cls,s); await loadData(); }catch(e){ toast('Error: '+e.message,true); } load('');
 }
 
-async function saveCheckIn(id, name, cls, status) {
-  var date = document.getElementById('sel-date').value;
-  var now = new Date();
-  var ts = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+
-    String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+
-    String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
-  // ตรวจสอบซ้ำ
-  var existing = DATA.attendance.findIndex(a => a.id==id && a.date==date);
-  if(existing >= 0) {
-    // อัพเดต row เดิม (row 2 = index 0, ดังนั้น row = existing+2)
-    var rowNum = existing + 2;
-    await sheetsUpdate(`${SHEET_ATTEND}!A${rowNum}:F${rowNum}`, [[ts, date, id, name, cls, status]]);
-    toast('อัพเดตสถานะ: ' + status);
+async function quickCheck(id,name,cls,status){
+  load('บันทึก...'); try{ await saveCheckIn(id,name,cls,status); await loadData(); }catch(e){ toast('Error: '+e.message,true); } load('');
+}
+
+async function saveCheckIn(id,name,cls,status){
+  var date=document.getElementById('sel-date').value;
+  var now=new Date();
+  var ts=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '+
+    String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
+  var existing=DATA.attendance.find(a=>a.id==id&&a.date==date);
+  if(existing){
+    await apiPost({action:'update',sheet:'Attendance',range:`A${existing.rowNum}:F${existing.rowNum}`,values:[ts,date,id,name,cls,status]});
+    toast('อัพเดต: '+name+' → '+status);
   } else {
-    await sheetsAppend(SHEET_ATTEND + '!A:F', [[ts, date, id, name, cls, status]]);
-    toast('บันทึก: ' + name + ' - ' + status);
+    await apiPost({action:'append',sheet:'Attendance',values:[ts,date,id,name,cls,status]});
+    toast('บันทึก: '+name+' → '+status);
   }
 }
 
-// ===== ADD STUDENT =====
-async function addStudent() {
-  var id = document.getElementById('add-id').value.trim();
-  var name = document.getElementById('add-name').value.trim();
-  var cls = document.getElementById('add-cls').value.trim();
-  if(!id||!name) { toast('กรอกข้อมูลให้ครบ', true); return; }
-  var exists = DATA.students.find(s => s.id == id);
-  if(exists) { toast('รหัสนี้มีอยู่แล้ว', true); return; }
+async function addStudent(){
+  var id=document.getElementById('add-id').value.trim();
+  var name=document.getElementById('add-name').value.trim();
+  var cls=document.getElementById('add-cls').value.trim();
+  if(!id||!name){ toast('กรอกข้อมูลให้ครบ',true); return; }
+  if(DATA.students.find(s=>s.id==id)){ toast('รหัสนี้มีอยู่แล้ว',true); return; }
   load('บันทึก...');
-  try {
-    await sheetsAppend(SHEET_STUDENTS + '!A:E', [[id, name, cls, '', '']]);
+  try{
+    await apiPost({action:'append',sheet:'Students',values:[id,name,cls,'','']});
     document.getElementById('add-id').value='';
     document.getElementById('add-name').value='';
     document.getElementById('add-cls').value='';
-    await loadData();
-    toast('เพิ่ม '+name+' เรียบร้อย');
-  } catch(e) { toast('Error: '+e.message, true); }
+    await loadData(); toast('เพิ่ม '+name+' เรียบร้อย');
+  }catch(e){ toast('Error: '+e.message,true); }
   load('');
 }
 
-function renderStudents() {
-  var html = '<tr><th>รหัส</th><th>ชื่อ</th><th>ห้อง</th><th>ใบหน้า</th></tr>';
-  DATA.students.forEach(s => {
-    html += `<tr><td>${s.id}</td><td>${s.name}</td><td>${s.cls}</td>
-      <td>${s.desc ? '<span class="badge ok">✅</span>' : '<span class="badge abs">ยังไม่มี</span>'}</td></tr>`;
+function renderStudents(){
+  var html='<tr><th>รหัส</th><th>ชื่อ</th><th>ห้อง</th><th>ใบหน้า</th></tr>';
+  DATA.students.forEach(s=>{
+    html+=`<tr><td>${s.id}</td><td>${s.name}</td><td>${s.cls}</td>
+      <td>${s.desc?'<span class="badge ok">✅ มีแล้ว</span>':'<span class="badge abs">ยังไม่มี</span>'}</td></tr>`;
   });
-  document.getElementById('tb-students').innerHTML = html;
+  document.getElementById('tb-students').innerHTML=html;
 }
 
-// ===== FACE MATCHER =====
-function buildMatcher() {
-  var labeled = [];
-  DATA.students.forEach(s => {
-    if(s.desc) {
-      try {
-        var parsed = JSON.parse(s.desc);
-        var arr = Array.isArray(parsed) ? parsed : Object.values(parsed);
-        labeled.push(new faceapi.LabeledFaceDescriptors(
-          s.id+'#'+s.name+'#'+s.cls,
-          [new Float32Array(arr)]
-        ));
-      } catch(e){}
-    }
+function buildMatcher(){
+  var labeled=[];
+  DATA.students.forEach(s=>{
+    if(s.desc){ try{
+      var parsed=JSON.parse(s.desc);
+      var arr=Array.isArray(parsed)?parsed:Object.values(parsed);
+      labeled.push(new faceapi.LabeledFaceDescriptors(s.id+'#'+s.name+'#'+s.cls,[new Float32Array(arr)]));
+    }catch(e){} }
   });
-  MATCHER = labeled.length > 0 ? new faceapi.FaceMatcher(labeled, 0.6) : null;
+  MATCHER=labeled.length>0?new faceapi.FaceMatcher(labeled,0.6):null;
 }
 
-// ===== CAMERA =====
-function startCam(videoId, withAI) {
-  if(stream) { stream.getTracks().forEach(t=>t.stop()); stream=null; }
-  if(aiInterval) { clearInterval(aiInterval); aiInterval=null; }
-  navigator.mediaDevices.getUserMedia({ video: { facingMode:'user', width:{ideal:640} } })
-    .then(s => {
-      stream = s;
-      var v = document.getElementById(videoId);
-      v.srcObject = s;
-      v.onloadedmetadata = () => { v.play(); if(withAI) runAI(v); };
-    })
-    .catch(e => toast('กล้องไม่ทำงาน: '+e.message, true));
+function startCam(videoId,withAI){
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+  if(aiInterval){ clearInterval(aiInterval); aiInterval=null; }
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640}}})
+    .then(s=>{ stream=s; var v=document.getElementById(videoId); v.srcObject=s; v.onloadedmetadata=()=>{ v.play(); if(withAI) runAI(v); }; })
+    .catch(e=>toast('กล้องไม่ทำงาน: '+e.message,true));
 }
 
-function stopCam() {
-  if(stream) { stream.getTracks().forEach(t=>t.stop()); stream=null; }
-  if(aiInterval) { clearInterval(aiInterval); aiInterval=null; }
+function stopCam(){
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+  if(aiInterval){ clearInterval(aiInterval); aiInterval=null; }
 }
 
-// ===== AI SCAN =====
-function runAI(video) {
-  var cvs = document.getElementById('c-scan');
-  video.addEventListener('play', () => {
-    faceapi.matchDimensions(cvs, { width: video.clientWidth, height: video.clientHeight });
-    aiInterval = setInterval(async () => {
-      var dets = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks().withFaceDescriptors();
-      var size = { width: video.clientWidth, height: video.clientHeight };
-      var rez = faceapi.resizeResults(dets, size);
-      var ctx = cvs.getContext('2d');
-      ctx.clearRect(0, 0, cvs.width, cvs.height);
-      currentFace = null;
-      if(MATCHER && rez.length > 0) {
-        rez.forEach(d => {
-          var m = MATCHER.findBestMatch(d.descriptor);
-          var box = d.detection.box;
-          var flipped = new faceapi.Box({ x: size.width-box.x-box.width, y:box.y, width:box.width, height:box.height });
-          if(m.label != 'unknown') {
-            var parts = m.label.split('#');
-            currentFace = { id:parts[0], name:parts[1], cls:parts[2] };
-            document.getElementById('ai-name').innerText = parts[1];
-            document.getElementById('ai-status').innerText = 'พบใบหน้า กดปุ่มเพื่อเช็คชื่อ';
-            new faceapi.draw.DrawBox(flipped, { label:parts[1], boxColor:'#2563eb' }).draw(cvs);
+function runAI(video){
+  var cvs=document.getElementById('c-scan');
+  video.addEventListener('play',()=>{
+    faceapi.matchDimensions(cvs,{width:video.clientWidth,height:video.clientHeight});
+    aiInterval=setInterval(async()=>{
+      var dets=await faceapi.detectAllFaces(video,new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptors();
+      var size={width:video.clientWidth,height:video.clientHeight};
+      var rez=faceapi.resizeResults(dets,size);
+      var ctx=cvs.getContext('2d'); ctx.clearRect(0,0,cvs.width,cvs.height);
+      currentFace=null;
+      if(MATCHER&&rez.length>0){
+        rez.forEach(d=>{
+          var m=MATCHER.findBestMatch(d.descriptor);
+          var box=d.detection.box;
+          var flip=new faceapi.Box({x:size.width-box.x-box.width,y:box.y,width:box.width,height:box.height});
+          if(m.label!='unknown'){
+            var parts=m.label.split('#');
+            currentFace={id:parts[0],name:parts[1],cls:parts[2]};
+            document.getElementById('ai-name').innerText=parts[1];
+            document.getElementById('ai-status').innerText='พบใบหน้า — กดปุ่มเพื่อเช็คชื่อ';
+            new faceapi.draw.DrawBox(flip,{label:parts[1],boxColor:'#2563eb'}).draw(cvs);
           } else {
-            document.getElementById('ai-name').innerText = '?';
-            document.getElementById('ai-status').innerText = 'ไม่รู้จักใบหน้า กรุณาลงทะเบียนก่อน';
-            new faceapi.draw.DrawBox(flipped, { label:'?', boxColor:'#ef4444' }).draw(cvs);
+            document.getElementById('ai-name').innerText='?';
+            document.getElementById('ai-status').innerText='ไม่รู้จักใบหน้า กรุณาลงทะเบียนก่อน';
+            new faceapi.draw.DrawBox(flip,{label:'?',boxColor:'#ef4444'}).draw(cvs);
           }
         });
-      } else if(rez.length == 0) {
-        document.getElementById('ai-name').innerText = '...';
-        document.getElementById('ai-status').innerText = 'เล็งกล้องไปที่ใบหน้า';
+      } else if(rez.length==0){
+        document.getElementById('ai-name').innerText='...';
+        document.getElementById('ai-status').innerText='เล็งกล้องไปที่ใบหน้า';
       }
-    }, 300);
+    },300);
   });
 }
 
-async function doCheck(status) {
-  if(!currentFace) { toast('ยังไม่พบใบหน้า', true); return; }
-  load('บันทึก...');
-  try {
-    await saveCheckIn(currentFace.id, currentFace.name, currentFace.cls, status);
-    await loadData();
-  } catch(e) { toast('Error: '+e.message, true); }
-  load('');
+async function doCheck(status){
+  if(!currentFace){ toast('ยังไม่พบใบหน้า',true); return; }
+  load('บันทึก...'); try{ await saveCheckIn(currentFace.id,currentFace.name,currentFace.cls,status); await loadData(); }catch(e){ toast('Error: '+e.message,true); } load('');
 }
 
-// ===== REGISTER FACE =====
-function fillRegSel(filter='') {
-  var sel = document.getElementById('reg-sel');
-  sel.innerHTML = '';
-  DATA.students.forEach(s => {
-    if(filter && !s.name.includes(filter) && !s.id.includes(filter)) return;
-    var opt = document.createElement('option');
-    opt.value = JSON.stringify(s);
-    opt.text = (s.desc?'✅ ':'⚪ ') + s.id + ' - ' + s.name;
+function fillRegSel(filter=''){
+  var sel=document.getElementById('reg-sel'); sel.innerHTML='';
+  DATA.students.forEach(s=>{
+    if(filter&&!s.name.includes(filter)&&!s.id.includes(filter)) return;
+    var opt=document.createElement('option');
+    opt.value=JSON.stringify({id:s.id,name:s.name,cls:s.cls,rowNum:s.rowNum});
+    opt.text=(s.desc?'✅ ':'⚪ ')+s.id+' - '+s.name;
     sel.add(opt);
   });
 }
 
-function filterReg() {
-  fillRegSel(document.getElementById('reg-search').value);
-}
+function filterReg(){ fillRegSel(document.getElementById('reg-search').value); }
 
-async function doReg() {
-  var val = document.getElementById('reg-sel').value;
-  if(!val) { toast('เลือกชื่อก่อน', true); return; }
-  var s = JSON.parse(val);
-  var video = document.getElementById('v-reg');
-  var det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-    .withFaceLandmarks().withFaceDescriptor();
-  if(!det) { toast('ไม่พบใบหน้าในกล้อง', true); return; }
+async function doReg(){
+  var val=document.getElementById('reg-sel').value; if(!val){ toast('เลือกชื่อก่อน',true); return; }
+  var s=JSON.parse(val);
+  var video=document.getElementById('v-reg');
+  var det=await faceapi.detectSingleFace(video,new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+  if(!det){ toast('ไม่พบใบหน้าในกล้อง',true); return; }
   load('บันทึกใบหน้า...');
-  try {
-    var desc = JSON.stringify(Array.from(det.descriptor));
-    // หา row ของนักเรียนใน Sheet
-    var rowIdx = DATA.students.findIndex(st => st.id == s.id);
-    if(rowIdx >= 0) {
-      var rowNum = rowIdx + 2;
-      await sheetsUpdate(`${SHEET_STUDENTS}!D${rowNum}`, [[desc]]);
-      await loadData();
-      toast('ลงทะเบียนใบหน้า '+s.name+' เรียบร้อย');
-    }
-  } catch(e) { toast('Error: '+e.message, true); }
+  try{
+    var desc=JSON.stringify(Array.from(det.descriptor));
+    await apiPost({action:'update',sheet:'Students',range:`D${s.rowNum}`,values:[desc]});
+    await loadData(); toast('ลงทะเบียนใบหน้า '+s.name+' เรียบร้อย');
+  }catch(e){ toast('Error: '+e.message,true); }
   load('');
 }
 
-// ===== NAV =====
-function go(p, btn) {
+function go(p,btn){
   document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(e=>e.classList.remove('active'));
-  document.getElementById(p).classList.add('active');
-  btn.classList.add('active');
+  document.getElementById(p).classList.add('active'); btn.classList.add('active');
   stopCam();
-  if(p=='scan') startCam('v-scan', true);
-  if(p=='reg') { startCam('v-reg', false); fillRegSel(); }
+  if(p=='scan') startCam('v-scan',true);
+  if(p=='reg'){ startCam('v-reg',false); fillRegSel(); }
   if(p=='add') renderStudents();
 }
 
-// ===== UTILS =====
-function load(t) {
-  document.getElementById('loader').style.display = t ? 'flex' : 'none';
-  document.getElementById('load-txt').innerText = t;
-}
+function load(t){ document.getElementById('loader').style.display=t?'flex':'none'; document.getElementById('load-txt').innerText=t; }
 
-function toast(msg, err) {
-  var d = document.createElement('div');
-  d.className = 'toast ' + (err ? 'toast-err' : 'toast-ok');
-  d.innerText = (err?'❌ ':'✅ ') + msg;
+function toast(msg,err){
+  var d=document.createElement('div');
+  d.className='toast '+(err?'toast-err':'toast-ok');
+  d.innerText=(err?'❌ ':'✅ ')+msg;
   document.body.appendChild(d);
-  setTimeout(() => { d.style.opacity='0'; d.style.transition='opacity .5s'; setTimeout(()=>d.remove(),500); }, 3000);
+  setTimeout(()=>{ d.style.opacity='0'; d.style.transition='opacity .5s'; setTimeout(()=>d.remove(),500); },3000);
 }
 
-// ===== BOOT =====
 loadCfg();
-if(CFG.sheetId && CFG.apiKey) {
-  document.getElementById('cfg-sheet').value = CFG.sheetId;
-  document.getElementById('cfg-key').value = CFG.apiKey;
-  document.getElementById('cfg-name').value = CFG.schoolName||'Smart School';
-  initApp();
-} else {
-  load('');
-}
+if(CFG.url){ document.getElementById('cfg-url').value=CFG.url; document.getElementById('cfg-name').value=CFG.schoolName||'Smart School'; initApp(); }
+else load('');
 </script>
 </body>
 </html>
