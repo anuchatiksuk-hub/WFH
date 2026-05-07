@@ -118,41 +118,61 @@
     </div>
   </div>
 
-  <div id="add" class="page">
-    <div class="card">
-      <h3 style="margin-bottom:14px">➕ เพิ่มนักเรียน</h3>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-        <div><label style="font-size:.85rem;font-weight:600;color:#475569">รหัส</label><input id="add-id" placeholder="1001" style="margin-top:4px"></div>
-        <div><label style="font-size:.85rem;font-weight:600;color:#475569">ห้อง</label><input id="add-cls" placeholder="1/1" style="margin-top:4px"></div>
-      </div>
-      <label style="font-size:.85rem;font-weight:600;color:#475569">ชื่อ-นามสกุล</label>
-      <input id="add-name" placeholder="ด.ช.สมชาย ใจดี" style="margin-top:4px;margin-bottom:12px">
-      <button class="btn btn-g" onclick="addStudent()">💾 บันทึก</button>
+ <div id="add" class="page">
+  <!-- นำเข้า Excel/CSV -->
+  <div class="card">
+    <h3 style="margin-bottom:14px">📂 นำเข้าจาก Excel / CSV</h3>
+    <p style="color:#64748b;font-size:.9rem;margin-bottom:12px">
+      ไฟล์ต้องมีคอลัมน์: <strong>รหัส, ชื่อ-นามสกุล, ห้อง</strong> (แถวแรกเป็น header)
+    </p>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <input type="file" id="import-file" accept=".xlsx,.xls,.csv" style="flex:1;min-width:200px">
+      <button class="btn btn-p" onclick="importExcel()">📥 นำเข้า</button>
     </div>
-    <div class="card">
-      <h3 style="margin-bottom:12px">📋 รายชื่อทั้งหมด</h3>
-      <div style="overflow-x:auto"><table id="tb-students"></table></div>
-    </div>
+    <div id="import-preview" style="margin-top:12px"></div>
   </div>
 
-  <div id="reg" class="page">
-    <div style="display:flex;gap:16px;flex-wrap:wrap">
-      <div style="flex:1;min-width:240px">
-        <div class="card">
-          <h3 style="margin-bottom:10px">1. เลือกนักเรียน</h3>
-          <input type="text" id="reg-search" placeholder="ค้นหา..." style="margin-bottom:8px" oninput="filterReg()">
-          <select id="reg-sel" size="8" style="height:180px"></select>
+  <!-- เพิ่มทีละคน -->
+  <div class="card">
+    <h3 style="margin-bottom:14px">➕ เพิ่มทีละคน</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div><label style="font-size:.85rem;font-weight:600;color:#475569">รหัส</label><input id="add-id" placeholder="1001" style="margin-top:4px"></div>
+      <div><label style="font-size:.85rem;font-weight:600;color:#475569">ห้อง</label><input id="add-cls" placeholder="1/1" style="margin-top:4px"></div>
+    </div>
+    <label style="font-size:.85rem;font-weight:600;color:#475569">ชื่อ-นามสกุล</label>
+    <input id="add-name" placeholder="ด.ช.สมชาย ใจดี" style="margin-top:4px;margin-bottom:12px">
+    <button class="btn btn-g" onclick="addStudent()">💾 บันทึก</button>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-bottom:12px">📋 รายชื่อทั้งหมด</h3>
+    <div style="overflow-x:auto"><table id="tb-students"></table></div>
+  </div>
+</div>
+
+ <div id="reg" class="page">
+  <div style="display:flex;gap:16px;flex-wrap:wrap">
+    <div style="flex:1;min-width:240px">
+      <div class="card">
+        <h3 style="margin-bottom:10px">1. เลือกนักเรียน</h3>
+        <!-- filter ห้อง/ชั้น -->
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <select id="reg-cls-filter" onchange="filterRegClass()" style="flex:1">
+            <option value="">— ทุกห้อง —</option>
+          </select>
         </div>
+        <input type="text" id="reg-search" placeholder="ค้นหาชื่อ / รหัส..." style="margin-bottom:8px" oninput="filterRegClass()">
+        <select id="reg-sel" size="8" style="height:200px"></select>
+        <p id="reg-count" style="font-size:.8rem;color:#64748b;margin-top:4px"></p>
       </div>
-      <div style="flex:1;min-width:240px">
-        <div class="card">
-          <h3 style="margin-bottom:10px">2. ถ่ายรูป</h3>
-          <div class="cam-wrap" style="margin-bottom:10px">
-            <video id="v-reg" autoplay playsinline muted></video>
-          </div>
-          <button class="btn btn-p" style="width:100%;margin-bottom:10px" onclick="doReg()">📸 บันทึกใบหน้า</button>
-          <p id="reg-status" style="font-size:.85rem;color:#475569;min-height:2em;text-align:center;line-height:1.5">เลือกชื่อนักเรียน แล้วกดปุ่มด้านบน</p>
+    </div>
+    <div style="flex:1;min-width:240px">
+      <div class="card">
+        <h3 style="margin-bottom:10px">2. ถ่ายรูป</h3>
+        <div class="cam-wrap" style="margin-bottom:10px">
+          <video id="v-reg" autoplay playsinline muted></video>
         </div>
+        <button class="btn btn-p" style="width:100%" onclick="doReg()">📸 บันทึกใบหน้า</button>
       </div>
     </div>
   </div>
@@ -387,14 +407,9 @@ async function doCheck(status){
 }
 
 function fillRegSel(filter=''){
-  var sel=document.getElementById('reg-sel'); sel.innerHTML='';
-  DATA.students.forEach(s=>{
-    if(filter&&!s.name.includes(filter)&&!s.id.includes(filter)) return;
-    var opt=document.createElement('option');
-    opt.value=JSON.stringify({id:s.id,name:s.name,cls:s.cls,rowNum:s.rowNum});
-    opt.text=(s.desc?'✅ ':'⚪ ')+s.id+' - '+s.name;
-    sel.add(opt);
-  });
+  fillClsFilter();
+  if(filter) document.getElementById('reg-search').value = filter;
+  filterRegClass();
 }
 
 function filterReg(){ fillRegSel(document.getElementById('reg-search').value); }
@@ -488,6 +503,130 @@ function toast(msg,err){
 loadCfg();
 if(CFG.url){ document.getElementById('cfg-url').value=CFG.url; document.getElementById('cfg-name').value=CFG.schoolName||'Smart School'; initApp(); }
 else load('');
+  // ===== IMPORT EXCEL/CSV =====
+async function importExcel(){
+  var file = document.getElementById('import-file').files[0];
+  if(!file){ toast('เลือกไฟล์ก่อน', true); return; }
+
+  var ext = file.name.split('.').pop().toLowerCase();
+  var preview = document.getElementById('import-preview');
+
+  if(ext === 'csv'){
+    var text = await file.text();
+    var rows = text.trim().split('\n').map(r => r.split(',').map(c => c.replace(/"/g,'').trim()));
+    processImportRows(rows, preview);
+  } else {
+    // xlsx — ใช้ SheetJS
+    if(typeof XLSX === 'undefined'){
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+      document.head.appendChild(s);
+      await new Promise(r => s.onload = r);
+    }
+    var buf = await file.arrayBuffer();
+    var wb = XLSX.read(buf, {type:'array'});
+    var ws = wb.Sheets[wb.SheetNames[0]];
+    var rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+    processImportRows(rows, preview);
+  }
+}
+
+async function processImportRows(rows, preview){
+  if(rows.length < 2){ toast('ไม่พบข้อมูล', true); return; }
+
+  // หา index คอลัมน์จาก header (รองรับทั้งภาษาไทยและ id/name/class)
+  var header = rows[0].map(h => String(h).toLowerCase().trim());
+  var idIdx   = header.findIndex(h => h.includes('รหัส') || h === 'id');
+  var nameIdx = header.findIndex(h => h.includes('ชื่อ') || h.includes('name'));
+  var clsIdx  = header.findIndex(h => h.includes('ห้อง') || h.includes('class') || h.includes('cls'));
+
+  if(idIdx < 0) idIdx = 0;
+  if(nameIdx < 0) nameIdx = 1;
+  if(clsIdx < 0) clsIdx = 2;
+
+  var data = rows.slice(1).filter(r => r[idIdx]);
+  var existIds = DATA.students.map(s => s.id);
+  var newRows = data.filter(r => !existIds.includes(String(r[idIdx]).trim()));
+  var dupRows = data.filter(r =>  existIds.includes(String(r[idIdx]).trim()));
+
+  // แสดง preview
+  preview.innerHTML = `
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;margin-bottom:10px">
+      <b style="color:#15803d">พบ ${data.length} รายการ</b> —
+      เพิ่มใหม่ได้ <b>${newRows.length}</b> คน,
+      ซ้ำ (ข้าม) <b>${dupRows.length}</b> คน
+    </div>
+    <div style="overflow-x:auto;max-height:200px;overflow-y:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+        <tr style="background:#f8fafc"><th style="padding:6px 8px;text-align:left">รหัส</th><th style="padding:6px 8px;text-align:left">ชื่อ</th><th style="padding:6px 8px;text-align:left">ห้อง</th><th style="padding:6px 8px">สถานะ</th></tr>
+        ${data.map(r => {
+          var dup = existIds.includes(String(r[idIdx]).trim());
+          return `<tr style="border-top:1px solid #f1f5f9;${dup?'opacity:.4':''}">
+            <td style="padding:6px 8px">${r[idIdx]}</td>
+            <td style="padding:6px 8px">${r[nameIdx]}</td>
+            <td style="padding:6px 8px">${r[clsIdx]}</td>
+            <td style="padding:6px 8px;text-align:center">${dup?'<span style="color:#b45309">ซ้ำ</span>':'<span style="color:#15803d">ใหม่</span>'}</td>
+          </tr>`;
+        }).join('')}
+      </table>
+    </div>
+    <button class="btn btn-g" style="margin-top:10px" onclick="confirmImport(${JSON.stringify(newRows.map(r => [String(r[idIdx]).trim(), String(r[nameIdx]).trim(), String(r[clsIdx]).trim()]))})">
+      ✅ ยืนยันนำเข้า ${newRows.length} คน
+    </button>`;
+}
+
+async function confirmImport(rows){
+  if(!rows.length){ toast('ไม่มีข้อมูลใหม่', true); return; }
+  load('กำลังบันทึก...');
+  try{
+    for(var i = 0; i < rows.length; i++){
+      await apiPost({action:'append', sheet:'Students', values:[rows[i][0], rows[i][1], rows[i][2], '', '']});
+    }
+    document.getElementById('import-preview').innerHTML = '';
+    document.getElementById('import-file').value = '';
+    await loadData();
+    toast('นำเข้าเรียบร้อย ' + rows.length + ' คน');
+  }catch(e){ toast('Error: '+e.message, true); }
+  load('');
+}
+
+// ===== FILTER ห้อง/ชั้น ใน ลงทะเบียนหน้า =====
+function fillClsFilter(){
+  var sel = document.getElementById('reg-cls-filter');
+  if(!sel) return;
+  var classes = [...new Set(DATA.students.map(s => s.cls).filter(Boolean))].sort();
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">— ทุกห้อง —</option>';
+  classes.forEach(c => {
+    var opt = document.createElement('option');
+    opt.value = c; opt.text = 'ห้อง ' + c;
+    if(c === cur) opt.selected = true;
+    sel.add(opt);
+  });
+}
+
+function filterRegClass(){
+  var cls    = (document.getElementById('reg-cls-filter').value || '').trim();
+  var search = (document.getElementById('reg-search').value || '').toLowerCase().trim();
+  var sel    = document.getElementById('reg-sel');
+  sel.innerHTML = '';
+
+  var filtered = DATA.students.filter(s => {
+    var clsOk    = !cls    || s.cls === cls;
+    var searchOk = !search || s.name.toLowerCase().includes(search) || s.id.includes(search);
+    return clsOk && searchOk;
+  });
+
+  filtered.forEach(s => {
+    var opt = document.createElement('option');
+    opt.value = JSON.stringify({id:s.id, name:s.name, cls:s.cls, rowNum:s.rowNum});
+    opt.text  = (s.desc ? '✅ ' : '⚪ ') + s.id + ' - ' + s.name + ' (' + s.cls + ')';
+    sel.add(opt);
+  });
+
+  var cnt = document.getElementById('reg-count');
+  if(cnt) cnt.innerText = 'แสดง ' + filtered.length + ' คน' + (cls ? ' (ห้อง '+cls+')' : '');
+}
 </script>
 </body>
 </html>
