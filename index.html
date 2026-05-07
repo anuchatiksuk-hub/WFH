@@ -315,10 +315,27 @@
   
 <style>
 @media print {
+@media print {
   body > *:not(#modal-print) { display:none !important; }
-  #modal-print { display:block !important; position:static !important; background:none !important; padding:0 !important; }
-  #modal-print > div { box-shadow:none !important; border-radius:0 !important; padding:0 !important; }
-  #modal-print button:not(#sig-pad) { display:none !important; }
+  #modal-print { 
+    display:block !important; 
+    position:static !important; 
+    background:none !important; 
+    padding:0 !important; 
+    overflow:visible !important;
+  }
+  #modal-print > div { 
+    box-shadow:none !important; 
+    border-radius:0 !important; 
+    padding:20px !important;
+    max-width:100% !important;
+  }
+  /* ซ่อนปุ่มทั้งหมดใน modal ยกเว้น sig-pad */
+  #modal-print button,
+  #modal-print .btn { display:none !important; }
+  /* แสดง sig-pad */
+  #sig-pad { display:block !important; }
+}
 }
 </style>
 <script>
@@ -1108,7 +1125,10 @@ function clearSig(){
   var cvs=document.getElementById('sig-pad');
   if(sigCtx&&cvs) sigCtx.clearRect(0,0,cvs.width,cvs.height);
 }
-function doPrint(){ window.print(); }
+function doPrint(){
+  // ให้ browser render modal ก่อน print
+  setTimeout(() => window.print(), 300);
+}
 
 // ===== INIT REPORT PAGE =====
 function initReportPage(){
