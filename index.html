@@ -176,6 +176,7 @@
           <video id="v-reg" autoplay playsinline muted></video>
         </div>
         <button class="btn btn-p" style="width:100%" onclick="doReg()">📸 บันทึกใบหน้า</button>
+        <p id="reg-status" style="margin-top:10px;font-size:.9rem;color:#64748b;min-height:24px;text-align:center"></p>
       </div>
     </div>
   </div>
@@ -310,7 +311,7 @@
     </div>
   </div>
 </div>
-
+</div> 
 <style>
 @media print {
   body > *:not(#modal-print) { display:none !important; }
@@ -319,7 +320,7 @@
   #modal-print button:not(#sig-pad) { display:none !important; }
 }
 </style>
-  
+  </div> 
 <script>
 var CFG={}, DATA={students:[],attendance:[]}, MATCHER=null;
 var stream=null, aiInterval=null, currentFace=null;
@@ -392,6 +393,8 @@ async function loadData(){
     DATA.attendance=arows.map((r,i)=>({ts:String(r[0]||''),date:String(r[1]||''),id:String(r[2]||''),name:String(r[3]||''),cls:String(r[4]||''),status:String(r[5]||''),rowNum:i+2}));
 
     buildMatcher(); renderDash(); renderStudents(); fillRegSel();
+    // เพิ่มใน loadData() ต่อท้ายหลัง fillRegSel()
+await loadTeachers();
   }catch(e){ toast('โหลดไม่สำเร็จ: '+e.message,true); }
   load('');
 }
@@ -775,25 +778,63 @@ function filterRegClass(){
   // ===== TEACHER DATA =====
 var TEACHERS = {}; // {cls: name}
 
-function loadTeachers(){
-  var t = localStorage.getItem('ss_teachers');
-  if(t) TEACHERS = JSON.parse(t);
+async function loadTeachers(){
+  try {
+    var r = await apiPost({action:'get', sheet:'Teachers'});
+    var rows = (r.values||[]).slice(1);
+    TEACHERS = {};
+    rows.forEach(row => { if(row[0]) TEACHERS[String(row[0])] = String(row[1]||''); });
+  } catch(e) {
+    // fallback localStorage
+    var t = localStorage.getItem('ss_teachers');
+    if(t) TEACHERS = JSON.parse(t);
+  }
 }
-function saveTeacher(){
+async function saveTeacher(){
   var cls  = document.getElementById('tc-cls').value;
   var name = document.getElementById('tc-name').value.trim();
   if(!cls || !name){ toast('กรอกให้ครบ', true); return; }
-  TEACHERS[cls] = name;
-  localStorage.setItem('ss_teachers', JSON.stringify(TEACHERS));
-  document.getElementById('tc-name').value = '';
-  renderTeachersTable();
-  toast('บันทึกครูประจำชั้น ' + cls + ' เรียบร้อย');
+
+  load('บันทึก...');
+  try {
+    // หาว่ามีห้องนี้อยู่แล้วไหม
+    var r = await apiPost({action:'get', sheet:'Teachers'});
+    var rows = (r.values||[]);
+    var found = -1;
+    for(var i=1; i<rows.length; i++){
+      if(String(rows[i][0]) === cls){ found = i+1; break; }
+    }
+    if(found > 0){
+      await apiPost({action:'update', sheet:'Teachers', range:`A${found}:B${found}`, values:[cls, name]});
+    } else {
+      await apiPost({action:'append', sheet:'Teachers', values:[cls, name]});
+    }
+    TEACHERS[cls] = name;
+    document.getElementById('tc-name').value = '';
+    renderTeachersTable();
+    toast('บันทึกครูประจำชั้น ' + cls + ' เรียบร้อย');
+  } catch(e){ toast('Error: '+e.message, true); }
+  load('');
 }
-function deleteTeacher(cls){
+async function deleteTeacher(cls){
   if(!confirm('ลบครูห้อง ' + cls + '?')) return;
-  delete TEACHERS[cls];
-  localStorage.setItem('ss_teachers', JSON.stringify(TEACHERS));
-  renderTeachersTable();
+  load('กำลังลบ...');
+  try {
+    var r = await apiPost({action:'get', sheet:'Teachers'});
+    var rows = (r.values||[]);
+    var found = -1;
+    for(var i=1; i<rows.length; i++){
+      if(String(rows[i][0]) === cls){ found = i+1; break; }
+    }
+    if(found > 0){
+      // เขียนทับด้วยค่าว่าง แล้ว reload
+      await apiPost({action:'update', sheet:'Teachers', range:`A${found}:B${found}`, values:['','']});
+    }
+    delete TEACHERS[cls];
+    renderTeachersTable();
+    toast('ลบครูห้อง ' + cls + ' เรียบร้อย');
+  } catch(e){ toast('Error: '+e.message, true); }
+  load('');
 }
 function renderTeachersTable(){
   var html = '<tr><th>ห้อง</th><th>ชื่อครู</th><th></th></tr>';
