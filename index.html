@@ -78,12 +78,15 @@
     <span id="app-title" style="font-weight:700;color:#2563eb;font-size:1.1rem">🏫 Smart School</span>
     <button class="btn" style="background:#f1f5f9;color:#64748b;font-size:.8rem;padding:6px 12px" onclick="resetApp()">⚙️ ตั้งค่า</button>
   </div>
-  <nav>
-    <button class="active" onclick="go('dash',this)">📝 เช็คชื่อ</button>
-    <button onclick="go('scan',this)">📸 สแกนหน้า</button>
-    <button onclick="go('add',this)">➕ เพิ่มนักเรียน</button>
-    <button onclick="go('reg',this)">🔖 ลงทะเบียนหน้า</button>
-  </nav>
+  <!-- แทนที่ nav เดิมทั้งหมด -->
+<nav>
+  <button class="active" onclick="go('dash',this)">📝 เช็คชื่อ</button>
+  <button onclick="go('scan',this)">📸 สแกนหน้า</button>
+  <button onclick="go('add',this)">➕ เพิ่มนักเรียน</button>
+  <button onclick="go('reg',this)">🔖 ลงทะเบียนหน้า</button>
+  <button onclick="go('report',this)">📊 รายงาน</button>
+  <button onclick="go('teachers',this)">👩‍🏫 ครูประจำชั้น</button>
+</nav>
 
   <div id="dash" class="page active">
     <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
@@ -177,7 +180,146 @@
     </div>
   </div>
 </div>
+<!-- ===== PAGE: รายงาน ===== -->
+<div id="report" class="page">
+  <!-- Tabs สรุป -->
+  <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+    <button class="btn" id="rt-day"   onclick="switchReport('day')"   style="background:#2563eb;color:white">รายวัน</button>
+    <button class="btn" id="rt-month" onclick="switchReport('month')" style="background:#f1f5f9;color:#64748b">รายเดือน</button>
+    <button class="btn" id="rt-term"  onclick="switchReport('term')"  style="background:#f1f5f9;color:#64748b">รายเทอม</button>
+  </div>
 
+  <!-- รายวัน -->
+  <div id="rp-day">
+    <div class="card">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+        <input type="date" id="rp-date" style="width:auto;min-width:150px;font-weight:600;color:#2563eb;background:#eff6ff;border-color:#2563eb">
+        <select id="rp-cls" onchange="renderReport()" style="width:auto;min-width:120px">
+          <option value="">ทุกห้อง</option>
+        </select>
+        <button class="btn btn-g" style="padding:8px 14px;font-size:.9rem" onclick="renderReport()">🔄 โหลด</button>
+        <button class="btn" style="background:#7c3aed;color:white;padding:8px 14px;font-size:.9rem" onclick="openPrintReport()">🖨️ พิมพ์รายงาน</button>
+      </div>
+      <div id="rp-stat" class="stat-grid" style="margin-bottom:14px"></div>
+      <div style="overflow-x:auto"><table id="rp-table"></table></div>
+    </div>
+  </div>
+
+  <!-- รายเดือน -->
+  <div id="rp-month" style="display:none">
+    <div class="card">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+        <input type="month" id="rp-month-sel" style="width:auto;font-weight:600;color:#2563eb;background:#eff6ff;border-color:#2563eb">
+        <select id="rp-cls-month" onchange="renderMonthReport()" style="width:auto;min-width:120px">
+          <option value="">ทุกห้อง</option>
+        </select>
+        <button class="btn btn-g" style="padding:8px 14px;font-size:.9rem" onclick="renderMonthReport()">🔄 โหลด</button>
+      </div>
+      <div id="rp-month-out"></div>
+    </div>
+  </div>
+
+  <!-- รายเทอม -->
+  <div id="rp-term" style="display:none">
+    <div class="card">
+      <h3 style="margin-bottom:12px">⚙️ กำหนดช่วงเทอม</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+        <div>
+          <label style="font-size:.85rem;font-weight:600;color:#475569">เปิดเทอม</label>
+          <input type="date" id="term-start" style="display:block;margin-top:4px">
+        </div>
+        <div>
+          <label style="font-size:.85rem;font-weight:600;color:#475569">ปิดเทอม</label>
+          <input type="date" id="term-end" style="display:block;margin-top:4px">
+        </div>
+        <select id="rp-cls-term" style="width:auto;min-width:120px;align-self:flex-end">
+          <option value="">ทุกห้อง</option>
+        </select>
+        <button class="btn btn-p" style="align-self:flex-end;padding:8px 14px" onclick="renderTermReport()">📊 สรุปเทอม</button>
+        <button class="btn" style="background:#0f766e;color:white;align-self:flex-end;padding:8px 14px" onclick="saveTermSettings()">💾 บันทึกช่วงเทอม</button>
+      </div>
+      <div id="rp-term-out"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: ครูประจำชั้น ===== -->
+<div id="teachers" class="page">
+  <div class="card">
+    <h3 style="margin-bottom:14px">➕ เพิ่ม/แก้ไขครูประจำชั้น</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div>
+        <label style="font-size:.85rem;font-weight:600;color:#475569">ห้องเรียน</label>
+        <select id="tc-cls" style="margin-top:4px">
+          <option value="">— เลือกห้อง —</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:.85rem;font-weight:600;color:#475569">ชื่อครู</label>
+        <input id="tc-name" placeholder="นางสาวสมใจ รักเรียน" style="margin-top:4px">
+      </div>
+    </div>
+    <button class="btn btn-g" onclick="saveTeacher()">💾 บันทึก</button>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-bottom:12px">📋 รายชื่อครูประจำชั้น</h3>
+    <div style="overflow-x:auto"><table id="tb-teachers"></table></div>
+  </div>
+</div>
+
+<!-- ===== MODAL: พิมพ์รายงาน ===== -->
+<div id="modal-print" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;overflow-y:auto;padding:20px">
+  <div style="background:white;border-radius:16px;max-width:700px;margin:0 auto;padding:28px;position:relative">
+    <button onclick="document.getElementById('modal-print').style.display='none'"
+      style="position:absolute;top:14px;right:14px;background:#f1f5f9;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:1.2rem">×</button>
+
+    <!-- เนื้อหารายงาน -->
+    <div id="print-content">
+      <div style="text-align:center;margin-bottom:20px">
+        <h2 id="pr-school" style="color:#1e40af;font-size:1.4rem;margin:0"></h2>
+        <h3 id="pr-title" style="color:#374151;font-size:1.1rem;margin:6px 0 0"></h3>
+        <p id="pr-date" style="color:#6b7280;margin:4px 0 0;font-size:.9rem"></p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px" id="pr-stats"></div>
+
+      <table id="pr-table" style="width:100%;border-collapse:collapse;font-size:.88rem;margin-bottom:20px">
+      </table>
+
+      <!-- ลายเซ็น -->
+      <div style="display:flex;justify-content:flex-end;margin-top:24px">
+        <div style="text-align:center;min-width:220px">
+          <p style="font-size:.85rem;color:#6b7280;margin-bottom:6px">ลายเซ็นครูประจำชั้น</p>
+          <canvas id="sig-pad" width="220" height="80"
+            style="border:1px solid #cbd5e1;border-radius:8px;cursor:crosshair;display:block;touch-action:none"></canvas>
+          <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+            <button class="btn" style="padding:4px 12px;font-size:.8rem;background:#f1f5f9;color:#64748b" onclick="clearSig()">ล้าง</button>
+          </div>
+          <div style="border-top:1px solid #374151;margin-top:10px;padding-top:4px">
+            <p id="pr-teacher" style="font-size:.85rem;color:#374151;margin:0"></p>
+            <p style="font-size:.8rem;color:#6b7280;margin:2px 0 0">ครูประจำชั้น</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:20px">
+      <button class="btn btn-p" onclick="doPrint()">🖨️ พิมพ์ / บันทึก PDF</button>
+      <button class="btn" style="background:#f1f5f9;color:#64748b" onclick="document.getElementById('modal-print').style.display='none'">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<style>
+@media print {
+  body > *:not(#modal-print) { display:none !important; }
+  #modal-print { display:block !important; position:static !important; background:none !important; padding:0 !important; }
+  #modal-print > div { box-shadow:none !important; border-radius:0 !important; padding:0 !important; }
+  #modal-print button:not(#sig-pad) { display:none !important; }
+}
+</style>
+  
 <script>
 var CFG={}, DATA={students:[],attendance:[]}, MATCHER=null;
 var stream=null, aiInterval=null, currentFace=null;
@@ -480,14 +622,17 @@ async function doReg(){
   load('');
 }
 
+// แทนที่ function go เดิมทั้งหมด
 function go(p,btn){
   document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(e=>e.classList.remove('active'));
   document.getElementById(p).classList.add('active'); btn.classList.add('active');
   stopCam();
-  if(p=='scan') startCam('v-scan',true);
-  if(p=='reg'){ startCam('v-reg',false); fillRegSel(); }
-  if(p=='add') renderStudents();
+  if(p=='scan')     startCam('v-scan',true);
+  if(p=='reg')      { startCam('v-reg',false); fillRegSel(); }
+  if(p=='add')      renderStudents();
+  if(p=='report')   { initReportPage(); renderReport(); }
+  if(p=='teachers') { loadTeachers(); fillReportClsSelectors(); renderTeachersTable(); }
 }
 
 function load(t){ document.getElementById('loader').style.display=t?'flex':'none'; document.getElementById('load-txt').innerText=t; }
@@ -626,6 +771,313 @@ function filterRegClass(){
 
   var cnt = document.getElementById('reg-count');
   if(cnt) cnt.innerText = 'แสดง ' + filtered.length + ' คน' + (cls ? ' (ห้อง '+cls+')' : '');
+}
+  // ===== TEACHER DATA =====
+var TEACHERS = {}; // {cls: name}
+
+function loadTeachers(){
+  var t = localStorage.getItem('ss_teachers');
+  if(t) TEACHERS = JSON.parse(t);
+}
+function saveTeacher(){
+  var cls  = document.getElementById('tc-cls').value;
+  var name = document.getElementById('tc-name').value.trim();
+  if(!cls || !name){ toast('กรอกให้ครบ', true); return; }
+  TEACHERS[cls] = name;
+  localStorage.setItem('ss_teachers', JSON.stringify(TEACHERS));
+  document.getElementById('tc-name').value = '';
+  renderTeachersTable();
+  toast('บันทึกครูประจำชั้น ' + cls + ' เรียบร้อย');
+}
+function deleteTeacher(cls){
+  if(!confirm('ลบครูห้อง ' + cls + '?')) return;
+  delete TEACHERS[cls];
+  localStorage.setItem('ss_teachers', JSON.stringify(TEACHERS));
+  renderTeachersTable();
+}
+function renderTeachersTable(){
+  var html = '<tr><th>ห้อง</th><th>ชื่อครู</th><th></th></tr>';
+  var classes = [...new Set(DATA.students.map(s=>s.cls).filter(Boolean))].sort();
+  // เติม dropdown
+  var sel = document.getElementById('tc-cls');
+  if(sel){
+    sel.innerHTML = '<option value="">— เลือกห้อง —</option>';
+    classes.forEach(c => { var o=document.createElement('option'); o.value=c; o.text='ห้อง '+c; sel.add(o); });
+  }
+  if(!Object.keys(TEACHERS).length){
+    html += '<tr><td colspan="3" style="text-align:center;color:#94a3b8;padding:16px">ยังไม่มีข้อมูล</td></tr>';
+  } else {
+    Object.keys(TEACHERS).sort().forEach(cls => {
+      html += `<tr>
+        <td><span class="badge" style="background:#eff6ff;color:#1d4ed8">${cls}</span></td>
+        <td>${TEACHERS[cls]}</td>
+        <td><button class="btn btn-r" style="padding:3px 10px;font-size:.8rem" onclick="deleteTeacher('${cls}')">🗑️ ลบ</button></td>
+      </tr>`;
+    });
+  }
+  document.getElementById('tb-teachers').innerHTML = html;
+}
+
+// ===== TERM SETTINGS =====
+var TERM = {};
+function saveTermSettings(){
+  TERM.start = document.getElementById('term-start').value;
+  TERM.end   = document.getElementById('term-end').value;
+  if(!TERM.start || !TERM.end){ toast('กรอกวันเปิด-ปิดเทอมก่อน', true); return; }
+  localStorage.setItem('ss_term', JSON.stringify(TERM));
+  toast('บันทึกช่วงเทอมเรียบร้อย');
+}
+function loadTerm(){
+  var t = localStorage.getItem('ss_term');
+  if(t){
+    TERM = JSON.parse(t);
+    if(TERM.start) document.getElementById('term-start').value = TERM.start;
+    if(TERM.end)   document.getElementById('term-end').value   = TERM.end;
+  }
+}
+
+// ===== FILL CLASS DROPDOWNS =====
+function fillReportClsSelectors(){
+  var classes = [...new Set(DATA.students.map(s=>s.cls).filter(Boolean))].sort();
+  ['rp-cls','rp-cls-month','rp-cls-term'].forEach(id => {
+    var sel = document.getElementById(id); if(!sel) return;
+    var cur = sel.value;
+    sel.innerHTML = '<option value="">ทุกห้อง</option>';
+    classes.forEach(c => { var o=document.createElement('option'); o.value=c; o.text='ห้อง '+c; if(c===cur) o.selected=true; sel.add(o); });
+  });
+}
+
+// ===== SWITCH REPORT TABS =====
+function switchReport(type){
+  ['day','month','term'].forEach(t => {
+    document.getElementById('rp-'+t).style.display = t===type ? 'block' : 'none';
+    var btn = document.getElementById('rt-'+t);
+    btn.style.background = t===type ? '#2563eb' : '#f1f5f9';
+    btn.style.color       = t===type ? 'white'   : '#64748b';
+  });
+  if(type==='day')   renderReport();
+  if(type==='month') renderMonthReport();
+  if(type==='term')  renderTermReport();
+}
+
+// ===== รายวัน =====
+function renderReport(){
+  var date = document.getElementById('rp-date').value;
+  var cls  = document.getElementById('rp-cls').value;
+  if(!date) return;
+
+  var students = DATA.students.filter(s => !cls || s.cls === cls);
+  var map = {};
+  DATA.attendance.filter(a => a.date===date && (!cls||a.cls===cls)).forEach(a => map[a.id]=a);
+
+  var p=0,l=0,ab=0,sick=0;
+  var html = '<tr><th>#</th><th>รหัส</th><th>ชื่อ</th><th>ห้อง</th><th>เวลา</th><th>สถานะ</th></tr>';
+  students.forEach((s,i) => {
+    var rec = map[s.id];
+    var status = rec ? rec.status : 'ขาด';
+    var time   = rec ? (rec.ts.length>=16 ? rec.ts.substring(11,16) : '-') : '-';
+    var color  = status==='มาเรียน'?'#dcfce7':status==='สาย'?'#fef3c7':status==='ป่วย'?'#e0f2fe':'#fee2e2';
+    var tc     = status==='มาเรียน'?'#15803d':status==='สาย'?'#b45309':status==='ป่วย'?'#0369a1':'#b91c1c';
+    if(status==='มาเรียน') p++;
+    else if(status==='สาย') l++;
+    else if(status==='ป่วย') sick++;
+    else ab++;
+    html += `<tr>
+      <td style="color:#94a3b8;font-size:.8rem">${i+1}</td>
+      <td>${s.id}</td><td>${s.name}</td><td>${s.cls}</td><td>${time}</td>
+      <td><span class="badge" style="background:${color};color:${tc}">${status}</span></td>
+    </tr>`;
+  });
+  document.getElementById('rp-table').innerHTML = html;
+
+  var total = students.length;
+  document.getElementById('rp-stat').innerHTML = `
+    <div class="stat"><h3>ทั้งหมด</h3><h1>${total}</h1></div>
+    <div class="stat" style="border-bottom-color:#22c55e"><h3>มาเรียน</h3><h1 style="color:#22c55e">${p}</h1></div>
+    <div class="stat" style="border-bottom-color:#f59e0b"><h3>สาย</h3><h1 style="color:#f59e0b">${l}</h1></div>
+    <div class="stat" style="border-bottom-color:#ef4444"><h3>ขาด</h3><h1 style="color:#ef4444">${ab}</h1></div>`;
+}
+
+// ===== รายเดือน =====
+function renderMonthReport(){
+  var month = document.getElementById('rp-month-sel').value; // yyyy-MM
+  var cls   = document.getElementById('rp-cls-month').value;
+  if(!month){ document.getElementById('rp-month-out').innerHTML='<p style="color:#94a3b8">เลือกเดือนก่อน</p>'; return; }
+
+  var students = DATA.students.filter(s => !cls || s.cls===cls);
+  var days = [...new Set(DATA.attendance.filter(a=>a.date.startsWith(month)&&(!cls||a.cls===cls)).map(a=>a.date))].sort();
+  if(!days.length){ document.getElementById('rp-month-out').innerHTML='<p style="color:#94a3b8">ไม่มีข้อมูลในเดือนนี้</p>'; return; }
+
+  var map = {}; // map[id][date] = status
+  DATA.attendance.forEach(a=>{ if(a.date.startsWith(month)&&(!cls||a.cls===cls)){ if(!map[a.id]) map[a.id]={}; map[a.id][a.date]=a.status; } });
+
+  var html = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.82rem">
+    <tr>
+      <th style="padding:6px 8px;background:#f8fafc;position:sticky;left:0;z-index:1">ชื่อ</th>
+      ${days.map(d=>`<th style="padding:6px 4px;background:#f8fafc;white-space:nowrap">${d.substring(8)}</th>`).join('')}
+      <th style="padding:6px 8px;background:#f8fafc">มา</th>
+      <th style="padding:6px 8px;background:#f8fafc">ขาด</th>
+      <th style="padding:6px 8px;background:#f8fafc">%</th>
+    </tr>`;
+  students.forEach(s=>{
+    var p=0,ab=0;
+    var cells = days.map(d=>{
+      var st = (map[s.id]||{})[d];
+      if(!st){ ab++; return `<td style="padding:4px;text-align:center;background:#fee2e2;color:#b91c1c;font-size:.75rem">ขาด</td>`; }
+      if(st==='มาเรียน'){ p++; return `<td style="padding:4px;text-align:center;background:#dcfce7;color:#15803d;font-size:.75rem">✓</td>`; }
+      if(st==='สาย'){ p++; return `<td style="padding:4px;text-align:center;background:#fef3c7;color:#b45309;font-size:.75rem">ส</td>`; }
+      if(st==='ป่วย'){ return `<td style="padding:4px;text-align:center;background:#e0f2fe;color:#0369a1;font-size:.75rem">ป</td>`; }
+      return `<td style="padding:4px;text-align:center;background:#fee2e2;color:#b91c1c;font-size:.75rem">ข</td>`;
+    }).join('');
+    var pct = days.length ? Math.round(p/days.length*100) : 0;
+    var pc  = pct>=80?'#15803d':pct>=60?'#b45309':'#b91c1c';
+    html += `<tr style="border-top:1px solid #f1f5f9">
+      <td style="padding:6px 8px;white-space:nowrap;position:sticky;left:0;background:white">${s.name}</td>
+      ${cells}
+      <td style="padding:6px 8px;text-align:center;font-weight:600;color:#15803d">${p}</td>
+      <td style="padding:6px 8px;text-align:center;font-weight:600;color:#ef4444">${ab}</td>
+      <td style="padding:6px 8px;text-align:center;font-weight:600;color:${pc}">${pct}%</td>
+    </tr>`;
+  });
+  html += '</table></div>';
+  document.getElementById('rp-month-out').innerHTML = html;
+}
+
+// ===== รายเทอม =====
+function renderTermReport(){
+  var start = document.getElementById('term-start').value;
+  var end   = document.getElementById('term-end').value;
+  var cls   = document.getElementById('rp-cls-term').value;
+  if(!start||!end){ document.getElementById('rp-term-out').innerHTML='<p style="color:#94a3b8">กำหนดช่วงเทอมก่อน</p>'; return; }
+
+  var students = DATA.students.filter(s => !cls || s.cls===cls);
+  var filtered = DATA.attendance.filter(a=>{
+    if(cls && a.cls!==cls) return false;
+    return a.date >= start && a.date <= end;
+  });
+  var days = [...new Set(filtered.map(a=>a.date))].sort();
+  var map = {};
+  filtered.forEach(a=>{ if(!map[a.id]) map[a.id]={}; map[a.id][a.date]=a.status; });
+
+  var html = `<h4 style="margin-bottom:12px;color:#475569">ช่วง ${start} ถึง ${end} (${days.length} วันเรียน)</h4>
+  <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.88rem">
+    <tr style="background:#f8fafc">
+      <th style="padding:8px">ชื่อ</th><th style="padding:8px">ห้อง</th>
+      <th style="padding:8px;color:#22c55e">มาเรียน</th>
+      <th style="padding:8px;color:#f59e0b">สาย</th>
+      <th style="padding:8px;color:#3b82f6">ป่วย</th>
+      <th style="padding:8px;color:#ef4444">ขาด</th>
+      <th style="padding:8px">% มา</th>
+    </tr>`;
+  students.forEach(s=>{
+    var p=0,l=0,sick=0,ab=0;
+    days.forEach(d=>{
+      var st=(map[s.id]||{})[d]||'ขาด';
+      if(st==='มาเรียน') p++;
+      else if(st==='สาย') l++;
+      else if(st==='ป่วย') sick++;
+      else ab++;
+    });
+    var pct = days.length ? Math.round((p+l)/days.length*100) : 0;
+    var bg  = pct>=80?'#dcfce7':pct>=60?'#fef3c7':'#fee2e2';
+    var tc  = pct>=80?'#15803d':pct>=60?'#b45309':'#b91c1c';
+    html += `<tr style="border-top:1px solid #f1f5f9">
+      <td style="padding:8px">${s.name}</td>
+      <td style="padding:8px"><span class="badge" style="background:#eff6ff;color:#1d4ed8">${s.cls}</span></td>
+      <td style="padding:8px;text-align:center;color:#15803d;font-weight:600">${p}</td>
+      <td style="padding:8px;text-align:center;color:#b45309;font-weight:600">${l}</td>
+      <td style="padding:8px;text-align:center;color:#0369a1;font-weight:600">${sick}</td>
+      <td style="padding:8px;text-align:center;color:#ef4444;font-weight:600">${ab}</td>
+      <td style="padding:8px;text-align:center"><span class="badge" style="background:${bg};color:${tc}">${pct}%</span></td>
+    </tr>`;
+  });
+  html += '</table></div>';
+  document.getElementById('rp-term-out').innerHTML = html;
+}
+
+// ===== PRINT REPORT =====
+function openPrintReport(){
+  var date    = document.getElementById('rp-date').value;
+  var cls     = document.getElementById('rp-cls').value;
+  var teacher = TEACHERS[cls] || (cls ? '(ยังไม่ระบุครู)' : '');
+
+  document.getElementById('pr-school').innerText  = CFG.schoolName || 'Smart School';
+  document.getElementById('pr-title').innerText   = 'รายงานการเข้าเรียนประจำวัน' + (cls?' ห้อง '+cls:'');
+  document.getElementById('pr-date').innerText    = 'วันที่ ' + date;
+  document.getElementById('pr-teacher').innerText = teacher;
+
+  var students = DATA.students.filter(s => !cls || s.cls===cls);
+  var map = {};
+  DATA.attendance.filter(a=>a.date===date&&(!cls||a.cls===cls)).forEach(a=>map[a.id]=a);
+
+  var p=0,l=0,ab=0,sick=0;
+  var rows = students.map((s,i)=>{
+    var rec    = map[s.id];
+    var status = rec ? rec.status : 'ขาด';
+    var time   = rec ? (rec.ts.length>=16?rec.ts.substring(11,16):'-') : '-';
+    if(status==='มาเรียน') p++;
+    else if(status==='สาย') l++;
+    else if(status==='ป่วย') sick++;
+    else ab++;
+    var color = status==='มาเรียน'?'#dcfce7':status==='สาย'?'#fef3c7':status==='ป่วย'?'#e0f2fe':'#fee2e2';
+    var tc    = status==='มาเรียน'?'#15803d':status==='สาย'?'#b45309':status==='ป่วย'?'#0369a1':'#b91c1c';
+    return `<tr style="border-bottom:1px solid #f1f5f9">
+      <td style="padding:6px 8px;color:#94a3b8;font-size:.8rem">${i+1}</td>
+      <td style="padding:6px 8px">${s.id}</td>
+      <td style="padding:6px 8px">${s.name}</td>
+      <td style="padding:6px 8px">${s.cls}</td>
+      <td style="padding:6px 8px">${time}</td>
+      <td style="padding:6px 8px"><span style="padding:3px 10px;border-radius:20px;font-size:.8rem;font-weight:600;background:${color};color:${tc}">${status}</span></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('pr-stats').innerHTML = `
+    <div style="background:#f0fdf4;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#15803d;margin:0">มาเรียน</p><h2 style="color:#15803d;margin:4px 0 0">${p}</h2></div>
+    <div style="background:#fefce8;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#b45309;margin:0">สาย</p><h2 style="color:#b45309;margin:4px 0 0">${l}</h2></div>
+    <div style="background:#eff6ff;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#0369a1;margin:0">ป่วย</p><h2 style="color:#0369a1;margin:4px 0 0">${sick}</h2></div>
+    <div style="background:#fef2f2;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#b91c1c;margin:0">ขาด</p><h2 style="color:#b91c1c;margin:4px 0 0">${ab}</h2></div>`;
+
+  document.getElementById('pr-table').innerHTML = `
+    <thead><tr style="background:#1e40af;color:white">
+      <th style="padding:8px">#</th><th style="padding:8px">รหัส</th>
+      <th style="padding:8px">ชื่อ-นามสกุล</th><th style="padding:8px">ห้อง</th>
+      <th style="padding:8px">เวลา</th><th style="padding:8px">สถานะ</th>
+    </tr></thead><tbody>${rows}</tbody>`;
+
+  clearSig();
+  document.getElementById('modal-print').style.display = 'block';
+  initSigPad();
+}
+
+// ===== SIGNATURE PAD =====
+var sigDrawing=false, sigCtx=null;
+function initSigPad(){
+  var cvs = document.getElementById('sig-pad');
+  sigCtx  = cvs.getContext('2d');
+  sigCtx.strokeStyle='#1e40af'; sigCtx.lineWidth=2; sigCtx.lineCap='round';
+  cvs.onmousedown  = e=>{ sigDrawing=true; sigCtx.beginPath(); sigCtx.moveTo(...sigXY(cvs,e)); };
+  cvs.onmousemove  = e=>{ if(!sigDrawing) return; sigCtx.lineTo(...sigXY(cvs,e)); sigCtx.stroke(); };
+  cvs.onmouseup    = ()=>sigDrawing=false;
+  cvs.ontouchstart = e=>{ e.preventDefault(); sigDrawing=true; sigCtx.beginPath(); sigCtx.moveTo(...sigXY(cvs,e.touches[0])); };
+  cvs.ontouchmove  = e=>{ e.preventDefault(); if(!sigDrawing) return; sigCtx.lineTo(...sigXY(cvs,e.touches[0])); sigCtx.stroke(); };
+  cvs.ontouchend   = ()=>sigDrawing=false;
+}
+function sigXY(cvs,e){ var r=cvs.getBoundingClientRect(); return [e.clientX-r.left, e.clientY-r.top]; }
+function clearSig(){ if(sigCtx) sigCtx.clearRect(0,0,220,80); }
+function doPrint(){ window.print(); }
+
+// ===== INIT REPORT PAGE =====
+function initReportPage(){
+  loadTeachers();
+  loadTerm();
+  fillReportClsSelectors();
+  renderTeachersTable();
+  // set วันนี้ default
+  var d = new Date();
+  var ds = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  var ms = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  document.getElementById('rp-date').value       = ds;
+  document.getElementById('rp-month-sel').value  = ms;
 }
 </script>
 </body>
