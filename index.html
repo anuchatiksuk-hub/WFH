@@ -1125,8 +1125,12 @@ function clearSig(){
   if(sigCtx&&cvs) sigCtx.clearRect(0,0,cvs.width,cvs.height);
 }
 function doPrint(){
-  // ให้ browser render modal ก่อน print
-  setTimeout(() => window.print(), 300);
+  var modal = document.getElementById('modal-print');
+  // ต้องเปิด modal ก่อน print
+  modal.style.display = 'block';
+  setTimeout(() => {
+    window.print();
+  }, 500);
 }
 
 // ===== INIT REPORT PAGE =====
