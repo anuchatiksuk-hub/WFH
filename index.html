@@ -162,10 +162,20 @@
         padding:20px !important;
         max-width:100% !important;
       }
-      #modal-print button { display:none !important; }
-      #sig-pad { display:block !important; }
-      * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
-    }
+
+       #sig-pad {
+    border:none !important;
+    display:block !important;
+  }
+     #modal-print button { display:none !important; }
+  /* ✅ แก้ตรงนี้ */
+  #sig-pad {
+    display:block !important;
+    border:none !important;
+    visibility:visible !important;
+  }
+  * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+}
     #login-modal {
       position:fixed;inset:0;background:rgba(0,0,0,.6);
       z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;
@@ -630,16 +640,15 @@
       <div id="pr-body"></div>
       <div style="display:flex;justify-content:flex-end;margin-top:24px">
         <div style="text-align:center;min-width:220px">
-          <p style="font-size:.85rem;color:#6b7280;margin-bottom:6px">ลายเซ็นครูประจำชั้น</p>
-          <canvas id="sig-pad" width="220" height="80"
-            style="border:1px solid #cbd5e1;border-radius:8px;cursor:crosshair;display:block;touch-action:none"></canvas>
-          <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
-            <button class="btn" style="padding:4px 12px;font-size:.8rem;background:#f1f5f9;color:#64748b" onclick="clearSig()">ล้าง</button>
-          </div>
-          <div style="border-top:1px solid #374151;margin-top:10px;padding-top:4px">
-            <p id="pr-teacher" style="font-size:.85rem;color:#374151;margin:0"></p>
+          <div style="border-top:1.5px solid #374151;padding-top:6px;margin-top:4px">
+            <canvas id="sig-pad" width="220" height="80"
+              style="border:1px dashed #cbd5e1;border-radius:4px;display:block;touch-action:none;cursor:crosshair;margin:0 auto 8px"></canvas>
+            <p id="pr-teacher" style="font-size:.9rem;color:#374151;margin:0;font-weight:600"></p>
             <p style="font-size:.8rem;color:#6b7280;margin:2px 0 0">ครูประจำชั้น</p>
           </div>
+          <button class="btn"
+            style="margin-top:8px;padding:4px 12px;font-size:.8rem;background:#f1f5f9;color:#64748b"
+            onclick="clearSig()">ล้างลายเซ็น</button>
         </div>
       </div>
     </div>
@@ -795,7 +804,7 @@ function renderDash(){
     var rec=map[s.id], badge='', time='-';
     var canManage = isAdmin || (myClass && s.cls === myClass);
 
-    if(rec){
+if(rec){
       time = parseTime(rec.ts);
       if(rec.status=='มาเรียน'){
         p++;
@@ -809,13 +818,15 @@ function renderDash(){
       }
       if(canManage){
         badge += ` <button class="btn" style="padding:3px 8px;font-size:.75rem;background:#6b7280;color:white" onclick="editCheck('${s.id}','${s.name}','${s.cls}')">✏️</button>`;
+        badge += ` <button class="btn" style="padding:3px 8px;font-size:.75rem;background:#0891b2;color:white" onclick="editStudentName('${s.id}','${s.name}','${s.cls}')">📝</button>`;
       }
     } else {
       if(canManage){
         badge=`
           <button class="btn btn-g" style="padding:3px 8px;font-size:.75rem" onclick="quickCheckAuto('${s.id}','${s.name}','${s.cls}','มาเรียน')">มา</button>
           <button class="btn btn-w" style="padding:3px 8px;font-size:.75rem" onclick="pickLateTime('${s.id}','${s.name}','${s.cls}')">สาย</button>
-          <button class="btn btn-r" style="padding:3px 8px;font-size:.75rem" onclick="quickCheck('${s.id}','${s.name}','${s.cls}','ขาด')">ขาด</button>`;
+          <button class="btn btn-r" style="padding:3px 8px;font-size:.75rem" onclick="quickCheck('${s.id}','${s.name}','${s.cls}','ขาด')">ขาด</button>
+          <button class="btn" style="padding:3px 8px;font-size:.75rem;background:#0891b2;color:white" onclick="editStudentName('${s.id}','${s.name}','${s.cls}')">📝</button>`;
       } else {
         badge = '<span style="color:#cbd5e1;font-size:.8rem">—</span>';
       }
@@ -890,6 +901,8 @@ function editCheck(id, name, cls) {
       </div>
     </div>`;
   document.body.appendChild(modal);
+
+  
 }
 
 var _editStatus = '';
@@ -1243,7 +1256,14 @@ async function loadTeachers(){
     var r = await apiPost({action:'get', sheet:'Teachers'});
     var rows = (r.values||[]).slice(1);
     TEACHERS = {};
-    rows.forEach(row => { if(row[0]) TEACHERS[String(row[0])] = String(row[1]||''); });
+    rows.forEach(row => {
+      if(!row[0]) return;
+      var cls = String(row[0]).trim();
+      // ✅ กรองเฉพาะ ISO date ออก (มี T และยาวกว่า 10)
+      if(cls.includes('T') && cls.length > 10) return;
+      if(!cls) return;
+      TEACHERS[cls] = String(row[1]||'');
+    });
   } catch(e) {
     var t = localStorage.getItem('ss_teachers');
     if(t) TEACHERS = JSON.parse(t);
@@ -1298,11 +1318,17 @@ async function deleteTeacher(cls){
 function renderTeachersTable(){
   var html = '<tr><th>ห้อง</th><th>ชื่อครู</th><th></th></tr>';
   var classes = [...new Set(DATA.students.map(s=>s.cls).filter(Boolean))].sort();
+  
   var sel = document.getElementById('tc-cls');
   if(sel){
     sel.innerHTML = '<option value="">— เลือกห้อง —</option>';
-    classes.forEach(c => { var o=document.createElement('option'); o.value=c; o.text='ห้อง '+c; sel.add(o); });
+    classes.forEach(c => { 
+      var o=document.createElement('option'); 
+      o.value=c; o.text='ห้อง '+c; 
+      sel.add(o); 
+    });
   }
+
   if(!Object.keys(TEACHERS).length){
     html += '<tr><td colspan="3" style="text-align:center;color:#94a3b8;padding:16px">ยังไม่มีข้อมูล</td></tr>';
   } else {
@@ -1310,11 +1336,71 @@ function renderTeachersTable(){
       html += `<tr>
         <td><span class="badge" style="background:#eff6ff;color:#1d4ed8">${cls}</span></td>
         <td>${TEACHERS[cls]}</td>
-        <td><button class="btn btn-r" style="padding:3px 10px;font-size:.8rem" onclick="deleteTeacher('${cls}')">🗑️ ลบ</button></td>
+        <td style="display:flex;gap:6px">
+          <button class="btn" style="padding:3px 8px;font-size:.78rem;background:#f59e0b;color:white" 
+            onclick="addExtraClass('${cls}','${TEACHERS[cls]}')">➕ เพิ่มห้อง</button>
+          <button class="btn btn-r" style="padding:3px 10px;font-size:.8rem" 
+            onclick="deleteTeacher('${cls}')">🗑️ ลบ</button>
+        </td>
       </tr>`;
     });
   }
   document.getElementById('tb-teachers').innerHTML = html;
+}
+
+// ✅ ฟังก์ชันเพิ่มห้องให้ครูคนเดิม
+function addExtraClass(existingCls, teacherName) {
+  var existing = document.getElementById('extra-cls-modal');
+  if (existing) existing.remove();
+
+  var classes = [...new Set(DATA.students.map(s=>s.cls).filter(Boolean))].sort();
+  var options = classes
+    .filter(c => !TEACHERS[c]) // เอาเฉพาะห้องที่ยังไม่มีครู
+    .map(c => `<option value="${c}">ห้อง ${c}</option>`)
+    .join('');
+
+  var modal = document.createElement('div');
+  modal.id = 'extra-cls-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:white;border-radius:16px;padding:28px;max-width:340px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+      <h3 style="color:#2563eb;margin-bottom:6px">➕ เพิ่มห้องที่ดูแล</h3>
+      <p style="color:#64748b;font-size:.9rem;margin-bottom:16px">ครู <strong>${teacherName}</strong> ดูแลห้องเพิ่มเติม</p>
+      <label style="font-size:.85rem;font-weight:600;color:#475569;display:block;margin-bottom:6px">เลือกห้อง</label>
+      <select id="extra-cls-sel" style="width:100%;margin-bottom:16px">
+        <option value="">— เลือกห้อง —</option>
+        ${options}
+      </select>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-p" style="flex:1" onclick="confirmExtraClass('${teacherName}')">💾 บันทึก</button>
+        <button class="btn" style="background:#f1f5f9;color:#64748b" onclick="document.getElementById('extra-cls-modal').remove()">ยกเลิก</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function confirmExtraClass(teacherName) {
+  var cls = document.getElementById('extra-cls-sel').value;
+  if (!cls) { toast('เลือกห้องก่อน', true); return; }
+  document.getElementById('extra-cls-modal').remove();
+  load('บันทึก...');
+  try {
+    var r = await apiPost({action:'get', sheet:'Teachers'});
+    var rows = (r.values||[]);
+    var found = -1;
+    for(var i=1; i<rows.length; i++){
+      if(String(rows[i][0]) === cls){ found = i+1; break; }
+    }
+    if(found > 0){
+      await apiPost({action:'update', sheet:'Teachers', range:`A${found}:B${found}`, values:[cls, teacherName]});
+    } else {
+      await apiPost({action:'append', sheet:'Teachers', values:[cls, teacherName]});
+    }
+    TEACHERS[cls] = teacherName;
+    renderTeachersTable();
+    toast('เพิ่มห้อง '+cls+' ให้ '+teacherName+' เรียบร้อย');
+  } catch(e) { toast('Error: '+e.message, true); }
+  load('');
 }
 
 // ===== TERM SETTINGS =====
@@ -1629,8 +1715,26 @@ function clearSig(){
   if(sigCtx&&cvs) sigCtx.clearRect(0,0,cvs.width,cvs.height);
 }
 function doPrint(){
-  document.getElementById('modal-print').style.display = 'block';
-  setTimeout(() => { window.print(); }, 500);
+  var cvs = document.getElementById('sig-pad');
+  
+  // แปลง canvas → img
+  var img = document.getElementById('sig-img');
+  if(!img){
+    img = document.createElement('img');
+    img.id = 'sig-img';
+    img.style.cssText = 'width:220px;height:80px;display:block';
+    // ✅ วาง img แทนที่ canvas เลย ไม่ต้องมี 2 อัน
+    cvs.parentNode.replaceChild(img, cvs);
+  }
+  img.src = cvs ? cvs.toDataURL('image/png') : img.src;
+
+  setTimeout(() => {
+    window.print();
+    // หลังพิมพ์เสร็จ restore canvas กลับ
+    setTimeout(() => {
+      img.parentNode.replaceChild(cvs, img);
+    }, 1000);
+  }, 300);
 }
 
 function initReportPage(){
@@ -1883,7 +1987,72 @@ async function saveTimeToSheet(){
   }catch(e){ toast('Error: '+e.message, true); }
   load('');
 }
+function editStudentName(id, name, cls) {
+  var existing = document.getElementById('edit-name-modal');
+  if (existing) existing.remove();
 
+  var modal = document.createElement('div');
+  modal.id  = 'edit-name-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:white;border-radius:16px;padding:28px;max-width:360px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+      <h3 style="color:#0891b2;margin-bottom:4px;font-size:1.2rem">📝 แก้ไขข้อมูลนักเรียน</h3>
+      <p style="color:#64748b;font-size:.9rem;margin-bottom:20px">รหัส ${id} — ห้อง ${cls}</p>
+
+      <label style="font-size:.85rem;font-weight:600;color:#475569;display:block;margin-bottom:5px">ชื่อ-นามสกุล</label>
+      <input id="edit-sname" value="${name}" 
+        style="width:100%;padding:10px;border:2px solid #0891b2;border-radius:10px;font-family:Sarabun;font-size:1rem;margin-bottom:14px">
+
+      <label style="font-size:.85rem;font-weight:600;color:#475569;display:block;margin-bottom:5px">ห้อง</label>
+      <input id="edit-scls" value="${cls}"
+        style="width:100%;padding:10px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:Sarabun;font-size:1rem;margin-bottom:20px"
+        ${!( CURRENT_USER && CURRENT_USER.role==='admin') ? 'readonly style="background:#f8fafc"' : ''}>
+      <small style="color:#94a3b8;font-size:.78rem;display:block;margin-top:-14px;margin-bottom:16px">
+        ${CURRENT_USER && CURRENT_USER.role==='admin' ? '(Admin แก้ได้ทุกอย่าง)' : '(ครูแก้ได้เฉพาะชื่อ)'}
+      </small>
+
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-p" style="flex:1" onclick="confirmEditStudentName('${id}','${cls}')">💾 บันทึก</button>
+        <button class="btn" style="background:#f1f5f9;color:#64748b" onclick="document.getElementById('edit-name-modal').remove()">ยกเลิก</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  setTimeout(() => document.getElementById('edit-sname').focus(), 100);
+}
+
+async function confirmEditStudentName(id, oldCls) {
+  var newName = document.getElementById('edit-sname').value.trim();
+  var newCls  = document.getElementById('edit-scls').value.trim();
+  
+  if (!newName) { toast('กรอกชื่อก่อน', true); return; }
+
+  // ครูแก้ได้เฉพาะชื่อ ห้องเปลี่ยนไม่ได้
+  var isAdmin = CURRENT_USER && CURRENT_USER.role === 'admin';
+  if (!isAdmin) newCls = oldCls;
+
+  document.getElementById('edit-name-modal').remove();
+  load('บันทึก...');
+  try {
+    var s = DATA.students.find(x => x.id == id);
+    if (!s) { toast('ไม่พบนักเรียน', true); load(''); return; }
+
+    await apiCall({
+      action: 'update',
+      sheet:  'Students',
+      range:  `A${s.rowNum}:C${s.rowNum}`,
+      values: [id, newName, newCls]
+    });
+
+    // อัพเดต cache ทันที
+    s.name = newName;
+    s.cls  = newCls;
+
+    renderDash();
+    renderStudents();
+    toast('แก้ไข '+newName+' เรียบร้อย');
+  } catch(e) { toast('Error: '+e.message, true); }
+  load('');
+}
 function applyTimeLocal(){
   var t = {
     ontime: document.getElementById('mg-time-ontime').value,
