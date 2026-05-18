@@ -47,6 +47,105 @@
     .toast-ok{background:#dcfce7;color:#15803d;border-left:4px solid #22c55e}
     .toast-err{background:#fee2e2;color:#991b1b;border-left:4px solid #ef4444}
 
+    /* ===== Settings Page Styles ===== */
+    .settings-section {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      margin-bottom: 20px;
+    }
+    .settings-section h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #eff6ff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .settings-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .settings-row .field-group {
+      flex: 1;
+      min-width: 200px;
+    }
+    .settings-row label {
+      display: block;
+      font-size: .83rem;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 5px;
+    }
+    .settings-preview {
+      background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+      border: 1.5px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-top: 12px;
+      font-size: .9rem;
+      color: #1e40af;
+    }
+    .settings-preview strong { color: #1e3a8a; }
+    .color-swatch {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      border: 2px solid #e2e8f0;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .color-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .preset-color {
+      width: 30px; height: 30px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: .15s;
+    }
+    .preset-color:hover, .preset-color.selected { border-color: #0f172a; transform: scale(1.1); }
+    .info-tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: .78rem;
+      font-weight: 600;
+      background: #f1f5f9;
+      color: #475569;
+      margin-right: 6px;
+    }
+    .save-bar {
+      position: sticky;
+      bottom: 0;
+      background: white;
+      border-top: 1px solid #e2e8f0;
+      padding: 12px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      z-index: 100;
+      box-shadow: 0 -2px 8px rgba(0,0,0,.06);
+    }
+    .danger-zone {
+      border: 1.5px solid #fecaca;
+      background: #fff5f5;
+      border-radius: 12px;
+      padding: 18px;
+      margin-top: 8px;
+    }
+    .danger-zone h4 { color: #b91c1c; margin-bottom: 10px; font-size: .9rem; }
+
     /* ===== PRINT STYLES ===== */
     @media print {
       body > * { display:none !important; }
@@ -68,15 +167,15 @@
       * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
     }
     #login-modal {
-  position:fixed;inset:0;background:rgba(0,0,0,.6);
-  z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;
-}
-.login-box {
-  background:white;border-radius:16px;padding:32px;
-  max-width:380px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.2);
-}
-.login-box h3 { color:#2563eb;margin-bottom:4px;font-size:1.3rem; }
-.login-box p { color:#64748b;margin-bottom:20px;font-size:.9rem; }
+      position:fixed;inset:0;background:rgba(0,0,0,.6);
+      z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;
+    }
+    .login-box {
+      background:white;border-radius:16px;padding:32px;
+      max-width:380px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.2);
+    }
+    .login-box h3 { color:#2563eb;margin-bottom:4px;font-size:1.3rem; }
+    .login-box p { color:#64748b;margin-bottom:20px;font-size:.9rem; }
   </style>
 </head>
 
@@ -100,6 +199,7 @@
     </div>
   </div>
 </div>
+
 <div id="loader">
   <div class="spin"></div>
   <p id="load-txt" style="margin-top:12px;font-weight:600;color:#64748b">กำลังโหลด...</p>
@@ -127,19 +227,21 @@
   <div style="background:white;border-bottom:1px solid #e2e8f0;padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
     <span id="app-title" style="font-weight:700;color:#2563eb;font-size:1.1rem">🏫 Smart School</span>
     <div style="display:flex;gap:8px;align-items:center">
-  <button id="btn-login" class="btn" style="background:#eff6ff;color:#2563eb;font-size:.8rem;padding:6px 12px" onclick="requireAdmin('dash',this)">🔐 Admin</button>
-  <button id="btn-settings" class="btn" style="display:none;background:#f1f5f9;color:#64748b;font-size:.8rem;padding:6px 12px" onclick="resetApp()">⚙️ ตั้งค่า</button>
-</div>
+      <button id="btn-login" class="btn" style="background:#eff6ff;color:#2563eb;font-size:.8rem;padding:6px 12px" onclick="requireAdmin('dash',this)">🔐 Admin</button>
+      <button id="btn-settings" class="btn" style="display:none;background:#f1f5f9;color:#64748b;font-size:.8rem;padding:6px 12px" onclick="resetApp()">⚙️ ตั้งค่า</button>
+    </div>
   </div>
-<nav>
-  <button class="active" onclick="go('dash',this)">📝 เช็คชื่อ</button>
-  <button onclick="go('scan',this)">📸 สแกนหน้า</button>
-<button id="nav-add" style="display:none" onclick="go('add',this)">➕ เพิ่มนักเรียน</button>
-  <button id="nav-reg" style="display:none" onclick="go('reg',this)">🔖 ลงทะเบียนหน้า</button>
-  <button id="nav-report" onclick="go('report',this)">📊 รายงาน</button>
-  <button id="nav-teachers" style="display:none" onclick="go('teachers',this)">👩‍🏫 ครูประจำชั้น</button>
-</nav>
+  <nav>
+    <button class="active" onclick="go('dash',this)">📝 เช็คชื่อ</button>
+    <button onclick="go('scan',this)">📸 สแกนหน้า</button>
+    <button id="nav-add" style="display:none" onclick="go('add',this)">➕ เพิ่มนักเรียน</button>
+    <button id="nav-reg" style="display:none" onclick="go('reg',this)">🔖 ลงทะเบียนหน้า</button>
+    <button id="nav-report" onclick="go('report',this)">📊 รายงาน</button>
+    <button id="nav-teachers" style="display:none" onclick="go('teachers',this)">👩‍🏫 ครูประจำชั้น</button>
+    <button id="nav-manage" style="display:none" onclick="go('manage',this)">🛠️ จัดการระบบ</button>
+  </nav>
 
+  <!-- ========== PAGE: DASH ========== -->
   <div id="dash" class="page active">
     <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
       <input type="date" id="sel-date" style="width:auto;min-width:150px;font-weight:600;color:#2563eb;background:#eff6ff;border-color:#2563eb">
@@ -158,6 +260,7 @@
     </div>
   </div>
 
+  <!-- ========== PAGE: SCAN ========== -->
   <div id="scan" class="page">
     <div class="cam-wrap">
       <video id="v-scan" autoplay playsinline muted></video>
@@ -173,6 +276,7 @@
     </div>
   </div>
 
+  <!-- ========== PAGE: ADD ========== -->
   <div id="add" class="page">
     <div class="card">
       <h3 style="margin-bottom:14px">📂 นำเข้าจาก Excel / CSV</h3>
@@ -185,7 +289,6 @@
       </div>
       <div id="import-preview" style="margin-top:12px"></div>
     </div>
-
     <div class="card">
       <h3 style="margin-bottom:14px">➕ เพิ่มทีละคน</h3>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
@@ -196,13 +299,13 @@
       <input id="add-name" placeholder="ด.ช.สมชาย ใจดี" style="margin-top:4px;margin-bottom:12px">
       <button class="btn btn-g" onclick="addStudent()">💾 บันทึก</button>
     </div>
-
     <div class="card">
       <h3 style="margin-bottom:12px">📋 รายชื่อทั้งหมด</h3>
       <div style="overflow-x:auto"><table id="tb-students"></table></div>
     </div>
   </div>
 
+  <!-- ========== PAGE: REG ========== -->
   <div id="reg" class="page">
     <div style="display:flex;gap:16px;flex-wrap:wrap">
       <div style="flex:1;min-width:240px">
@@ -231,14 +334,13 @@
     </div>
   </div>
 
+  <!-- ========== PAGE: REPORT ========== -->
   <div id="report" class="page">
     <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
       <button class="btn" id="rt-day"   onclick="switchReport('day')"   style="background:#2563eb;color:white">รายวัน</button>
       <button class="btn" id="rt-month" onclick="switchReport('month')" style="background:#f1f5f9;color:#64748b">รายเดือน</button>
       <button class="btn" id="rt-term"  onclick="switchReport('term')"  style="background:#f1f5f9;color:#64748b">รายเทอม</button>
     </div>
-
-    <!-- รายวัน -->
     <div id="rp-day">
       <div class="card">
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -253,8 +355,6 @@
         <div style="overflow-x:auto"><table id="rp-table"></table></div>
       </div>
     </div>
-
-    <!-- รายเดือน -->
     <div id="rp-month" style="display:none">
       <div class="card">
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -268,8 +368,6 @@
         <div id="rp-month-out"></div>
       </div>
     </div>
-
-    <!-- รายเทอม -->
     <div id="rp-term" style="display:none">
       <div class="card">
         <h3 style="margin-bottom:12px">⚙️ กำหนดช่วงเทอม</h3>
@@ -294,6 +392,7 @@
     </div>
   </div>
 
+  <!-- ========== PAGE: TEACHERS ========== -->
   <div id="teachers" class="page">
     <div class="card">
       <h3 style="margin-bottom:14px">➕ เพิ่ม/แก้ไขครูประจำชั้น</h3>
@@ -311,33 +410,224 @@
       </div>
       <button class="btn btn-g" onclick="saveTeacher()">💾 บันทึก</button>
     </div>
-
     <div class="card">
       <h3 style="margin-bottom:12px">📋 รายชื่อครูประจำชั้น</h3>
       <div style="overflow-x:auto"><table id="tb-teachers"></table></div>
     </div>
   </div>
 
+  <!-- ========== PAGE: MANAGE (จัดการระบบ) ========== -->
+  <div id="manage" class="page">
+    <div style="margin-bottom:16px">
+      <h2 style="font-size:1.3rem;font-weight:700;color:#1e40af">🛠️ จัดการระบบ</h2>
+      <p style="color:#64748b;font-size:.9rem;margin-top:4px">แก้ไขการตั้งค่าระบบและบันทึกลง Google Sheet</p>
+    </div>
+
+    <!-- ── ส่วนที่ 1: ข้อมูลองค์กร ── -->
+    <div class="settings-section">
+      <h3>🏫 ข้อมูลองค์กร / โรงเรียน</h3>
+
+      <div class="settings-row">
+        <div class="field-group">
+          <label>ชื่อโรงเรียน / องค์กร</label>
+          <input id="mg-school-name" placeholder="Smart School">
+        </div>
+        <div class="field-group">
+          <label>ชื่อย่อ (ใช้ในรายงาน)</label>
+          <input id="mg-school-abbr" placeholder="SS">
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <div class="field-group">
+          <label>ที่อยู่ / ที่ตั้ง</label>
+          <input id="mg-school-addr" placeholder="123 ถนนสุขุมวิท กรุงเทพฯ 10110">
+        </div>
+        <div class="field-group">
+          <label>เบอร์โทรศัพท์</label>
+          <input id="mg-school-tel" placeholder="02-xxx-xxxx">
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <div class="field-group">
+          <label>อีเมลติดต่อ</label>
+          <input id="mg-school-email" type="email" placeholder="info@school.ac.th">
+        </div>
+        <div class="field-group">
+          <label>เว็บไซต์</label>
+          <input id="mg-school-web" placeholder="www.school.ac.th">
+        </div>
+      </div>
+
+      <div class="settings-preview" id="mg-preview">
+        <strong id="pv-name">Smart School</strong>
+        <span id="pv-abbr" style="margin-left:8px;font-size:.8rem;background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:12px"></span><br>
+        <span id="pv-addr" style="font-size:.85rem;color:#475569"></span>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn btn-p" onclick="saveOrgToSheet()">💾 บันทึกลง Sheet</button>
+        <button class="btn" style="background:#f1f5f9;color:#64748b" onclick="loadOrgFromSheet()">🔄 โหลดจาก Sheet</button>
+        <button class="btn btn-g" onclick="applyOrgLocal()">✅ ใช้งานทันที (Local)</button>
+      </div>
+    </div>
+
+    <!-- ── ส่วนที่ 2: ตั้งค่าการเช็คชื่อ ── -->
+    <div class="settings-section">
+      <h3>⏰ ตั้งค่าการเช็คชื่อ</h3>
+
+      <div class="settings-row">
+        <div class="field-group">
+          <label>เวลาเริ่มเรียน (มาเรียนก่อนเวลานี้ = ปกติ)</label>
+          <input id="mg-time-ontime" type="time" value="07:30">
+        </div>
+        <div class="field-group">
+          <label>เวลาสาย (หลังจากนี้ = สาย)</label>
+          <input id="mg-time-late" type="time" value="08:00">
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <div class="field-group">
+          <label>เวลาปิดรับเช็คชื่อ</label>
+          <input id="mg-time-close" type="time" value="12:00">
+        </div>
+        <div class="field-group">
+          <label>ช่วงวันเรียน</label>
+          <select id="mg-school-days">
+            <option value="1-5">จันทร์ – ศุกร์</option>
+            <option value="1-6">จันทร์ – เสาร์</option>
+            <option value="0-6">ทุกวัน</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn btn-p" onclick="saveTimeToSheet()">💾 บันทึกลง Sheet</button>
+        <button class="btn btn-g" onclick="applyTimeLocal()">✅ ใช้งานทันที (Local)</button>
+      </div>
+    </div>
+
+    <!-- ── ส่วนที่ 3: ตั้งค่าหน้าตาระบบ ── -->
+    <div class="settings-section">
+      <h3>🎨 ตั้งค่าหน้าตาระบบ (Theme)</h3>
+
+      <div class="settings-row">
+        <div class="field-group">
+          <label>สีหลัก (Primary Color)</label>
+          <div class="color-row">
+            <input id="mg-color-primary" type="color" value="#2563eb" class="color-swatch" style="padding:2px 4px">
+            <div id="preset-colors" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>ข้อความในส่วนหัว</label>
+          <input id="mg-header-text" placeholder="🏫 Smart School">
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <div class="field-group">
+          <label>ไอคอน / Emoji ของระบบ</label>
+          <input id="mg-school-icon" placeholder="🏫" maxlength="4" style="font-size:1.4rem;text-align:center">
+        </div>
+        <div class="field-group">
+          <label>คำอธิบาย (Subtitle ใต้ชื่อ)</label>
+          <input id="mg-school-subtitle" placeholder="ระบบเช็คชื่อออนไลน์">
+        </div>
+      </div>
+
+      <!-- Preview แถบ Nav -->
+      <div style="margin-top:14px;border:1.5px dashed #cbd5e1;border-radius:10px;padding:12px">
+        <p style="font-size:.78rem;color:#94a3b8;margin-bottom:8px">ตัวอย่างแถบหัวเว็บ</p>
+        <div id="mg-nav-preview" style="background:white;border-radius:8px;padding:10px 14px;border-bottom:3px solid #2563eb;display:flex;align-items:center;justify-content:space-between">
+          <span id="pv-header" style="font-weight:700;color:#2563eb;font-size:1rem">🏫 Smart School</span>
+          <span style="font-size:.75rem;color:#94a3b8">ตัวอย่าง</span>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn btn-p" onclick="saveThemeToSheet()">💾 บันทึกลง Sheet</button>
+        <button class="btn btn-g" onclick="applyThemeLocal()">✅ ใช้งานทันที (Local)</button>
+        <button class="btn" style="background:#f1f5f9;color:#64748b" onclick="resetTheme()">↩️ รีเซ็ต Theme</button>
+      </div>
+    </div>
+
+    <!-- ── ส่วนที่ 4: ตั้งค่า Apps Script ── -->
+    <div class="settings-section">
+      <h3>🔗 ตั้งค่า Apps Script URL</h3>
+      <div class="settings-row">
+        <div class="field-group">
+          <label>Web App URL (ปัจจุบัน)</label>
+          <input id="mg-script-url" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+      </div>
+      <p style="font-size:.82rem;color:#94a3b8;margin-top:6px">⚠️ เปลี่ยน URL จะใช้ทันทีหลังบันทึก (รีโหลดข้อมูลใหม่)</p>
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn btn-p" onclick="saveScriptUrl()">💾 บันทึก URL ใหม่</button>
+        <button class="btn btn-g" onclick="testConnection()">🔌 ทดสอบการเชื่อมต่อ</button>
+      </div>
+      <div id="mg-conn-result" style="margin-top:10px;font-size:.88rem;min-height:22px"></div>
+    </div>
+
+    <!-- ── ส่วนที่ 5: Danger Zone ── -->
+    <div class="settings-section">
+      <h3>⚠️ Danger Zone</h3>
+      <div class="danger-zone">
+        <h4>🗑️ การดำเนินการที่ไม่สามารถย้อนกลับได้</h4>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-r" style="font-size:.85rem;padding:8px 14px" onclick="clearLocalSettings()">🧹 ล้างการตั้งค่า Local ทั้งหมด</button>
+          <button class="btn" style="background:#7c3aed;color:white;font-size:.85rem;padding:8px 14px" onclick="resetApp()">↩️ รีเซ็ตระบบ (กลับหน้าตั้งค่าแรก)</button>
+        </div>
+        <p style="font-size:.8rem;color:#b91c1c;margin-top:10px">⚠️ ล้างการตั้งค่า Local จะลบ URL, ชื่อโรงเรียน, Theme ทั้งหมดออกจากเบราว์เซอร์นี้</p>
+      </div>
+    </div>
+
+    <!-- ── ส่วนที่ 6: สถานะระบบ ── -->
+    <div class="settings-section">
+      <h3>📊 สถานะระบบ</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
+        <div style="background:#f8fafc;border-radius:10px;padding:14px">
+          <p style="font-size:.78rem;color:#64748b;margin-bottom:4px">นักเรียนทั้งหมด</p>
+          <p id="sys-students" style="font-size:1.5rem;font-weight:700;color:#1e40af">0</p>
+        </div>
+        <div style="background:#f8fafc;border-radius:10px;padding:14px">
+          <p style="font-size:.78rem;color:#64748b;margin-bottom:4px">บันทึกเช็คชื่อ</p>
+          <p id="sys-att" style="font-size:1.5rem;font-weight:700;color:#1e40af">0</p>
+        </div>
+        <div style="background:#f8fafc;border-radius:10px;padding:14px">
+          <p style="font-size:.78rem;color:#64748b;margin-bottom:4px">ลงทะเบียนหน้าแล้ว</p>
+          <p id="sys-face" style="font-size:1.5rem;font-weight:700;color:#15803d">0</p>
+        </div>
+        <div style="background:#f8fafc;border-radius:10px;padding:14px">
+          <p style="font-size:.78rem;color:#64748b;margin-bottom:4px">ห้องเรียน</p>
+          <p id="sys-cls" style="font-size:1.5rem;font-weight:700;color:#7c3aed">0</p>
+        </div>
+      </div>
+      <button class="btn" style="background:#f1f5f9;color:#64748b;margin-top:14px;font-size:.88rem;padding:8px 16px" onclick="refreshSystemStats()">🔄 อัพเดตสถิติ</button>
+    </div>
+
+  </div><!-- /manage -->
+
+  <!-- ========== PAGE: TEACHERS ========== -->
+  <div id="teachersx" class="page" style="display:none"></div>
+
 </div><!-- ปิด #app -->
 
-<!-- ===== MODAL: พิมพ์รายงาน ===== อยู่นอก #app เป็น direct child ของ body -->
+<!-- ===== MODAL: พิมพ์รายงาน ===== -->
 <div id="modal-print" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;overflow-y:auto;padding:20px">
   <div style="background:white;border-radius:16px;max-width:900px;margin:0 auto;padding:28px;position:relative">
     <button onclick="document.getElementById('modal-print').style.display='none'"
       style="position:absolute;top:14px;right:14px;background:#f1f5f9;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:1.2rem">×</button>
-
     <div id="print-content">
       <div style="text-align:center;margin-bottom:20px">
         <h2 id="pr-school" style="color:#1e40af;font-size:1.4rem;margin:0"></h2>
         <h3 id="pr-title" style="color:#374151;font-size:1.1rem;margin:6px 0 0"></h3>
         <p id="pr-date" style="color:#6b7280;margin:4px 0 0;font-size:.9rem"></p>
       </div>
-
       <div id="pr-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px"></div>
-
-      <!-- เนื้อหารายงาน (แตกต่างตาม type) -->
       <div id="pr-body"></div>
-
       <div style="display:flex;justify-content:flex-end;margin-top:24px">
         <div style="text-align:center;min-width:220px">
           <p style="font-size:.85rem;color:#6b7280;margin-bottom:6px">ลายเซ็นครูประจำชั้น</p>
@@ -353,7 +643,6 @@
         </div>
       </div>
     </div>
-
     <div style="display:flex;gap:10px;justify-content:center;margin-top:20px">
       <button class="btn btn-p" onclick="doPrint()">🖨️ พิมพ์ / บันทึก PDF</button>
       <button class="btn" style="background:#f1f5f9;color:#64748b" onclick="document.getElementById('modal-print').style.display='none'">ปิด</button>
@@ -365,6 +654,12 @@
 var CFG={}, DATA={students:[],attendance:[]}, MATCHER=null;
 var stream=null, aiInterval=null, currentFace=null;
 const MODEL_URL = './weights';
+
+// ─── color presets ───
+var COLOR_PRESETS = [
+  '#2563eb','#7c3aed','#db2777','#dc2626','#ea580c',
+  '#ca8a04','#16a34a','#0891b2','#0f172a','#64748b'
+];
 
 function loadCfg(){ var c=localStorage.getItem('ss_cfg3'); if(c) CFG=JSON.parse(c); }
 function saveCfg(){ localStorage.setItem('ss_cfg3',JSON.stringify(CFG)); }
@@ -383,7 +678,6 @@ async function apiCall(body) {
   if (!j.success) throw new Error(j.error || 'ไม่สำเร็จ');
   return j;
 }
-
 function apiPost(body){ return apiCall(body); }
 
 function startApp(){
@@ -396,7 +690,7 @@ function startApp(){
 async function initApp(){
   document.getElementById('setup').style.display='none';
   document.getElementById('app').style.display='block';
-  document.getElementById('app-title').innerText='🏫 '+CFG.schoolName;
+  applyThemeFromCfg();
   load('⏳ โหลด AI...');
   try{
     await Promise.all([
@@ -408,6 +702,26 @@ async function initApp(){
   setToday();
   await loadData();
   load('');
+}
+
+// ─── Apply theme from CFG ───
+function applyThemeFromCfg(){
+  var name = CFG.schoolName || 'Smart School';
+  var icon = CFG.schoolIcon || '🏫';
+  var color = CFG.primaryColor || '#2563eb';
+  document.getElementById('app-title').innerText = icon+' '+name;
+  document.title = name+' - เช็คชื่อ AI';
+  // apply primary color to nav active border + buttons
+  document.documentElement.style.setProperty('--primary', color);
+  var styleEl = document.getElementById('dynamic-theme');
+  if(!styleEl){ styleEl = document.createElement('style'); styleEl.id='dynamic-theme'; document.head.appendChild(styleEl); }
+  styleEl.textContent = `
+    .btn-p { background: ${color} !important; }
+    nav button.active { color: ${color} !important; border-bottom-color: ${color} !important; }
+    #app-title { color: ${color} !important; }
+    input:focus, select:focus { border-color: ${color} !important; }
+    .settings-section h3 { color: ${color} !important; border-bottom-color: ${color}22 !important; }
+  `;
 }
 
 async function loadData(){
@@ -591,37 +905,22 @@ async function doReg(){
   var s=JSON.parse(val);
   var video=document.getElementById('v-reg');
   var status=document.getElementById('reg-status');
-
-  if(!video.srcObject || video.readyState < 2){
-    toast('กล้องยังไม่พร้อม รอสักครู่',true); return;
-  }
-
+  if(!video.srcObject || video.readyState < 2){ toast('กล้องยังไม่พร้อม รอสักครู่',true); return; }
   status.innerText='🔍 กำลังตรวจจับใบหน้า...';
-
   var offCanvas = document.createElement('canvas');
   offCanvas.width  = video.videoWidth  || 640;
   offCanvas.height = video.videoHeight || 480;
   var ctx = offCanvas.getContext('2d');
-
   var det = null;
   var opts = new faceapi.TinyFaceDetectorOptions({inputSize:416, scoreThreshold:0.3});
-
   for(var attempt=0; attempt<4; attempt++){
     ctx.drawImage(video, 0, 0, offCanvas.width, offCanvas.height);
-    try{
-      det = await faceapi.detectSingleFace(offCanvas, opts).withFaceLandmarks().withFaceDescriptor();
-    }catch(e){}
+    try{ det = await faceapi.detectSingleFace(offCanvas, opts).withFaceLandmarks().withFaceDescriptor(); }catch(e){}
     if(det) break;
     await new Promise(res=>setTimeout(res,600));
     status.innerText='🔍 พยายามครั้งที่ '+(attempt+2)+'/4 — เล็งหน้าให้ตรงกล้อง';
   }
-
-  if(!det){
-    status.innerText='❌ ไม่พบใบหน้า — ลองใหม่อีกครั้ง (แสงสว่างพอ / ไม่มีอะไรบัง)';
-    toast('ไม่พบใบหน้าในกล้อง',true);
-    return;
-  }
-
+  if(!det){ status.innerText='❌ ไม่พบใบหน้า — ลองใหม่อีกครั้ง'; toast('ไม่พบใบหน้าในกล้อง',true); return; }
   status.innerText='✅ พบใบหน้า กำลังบันทึก...';
   load('บันทึกใบหน้า...');
   try{
@@ -631,10 +930,7 @@ async function doReg(){
     await loadData();
     status.innerText='✅ บันทึกใบหน้า '+s.name+' เรียบร้อย!';
     toast('ลงทะเบียนใบหน้า '+s.name+' เรียบร้อย');
-  }catch(e){
-    status.innerText='❌ Error: '+e.message;
-    toast('Error: '+e.message,true);
-  }
+  }catch(e){ status.innerText='❌ Error: '+e.message; toast('Error: '+e.message,true); }
   load('');
 }
 
@@ -648,6 +944,7 @@ function go(p,btn){
   if(p=='add')      renderStudents();
   if(p=='report')   { initReportPage(); renderReport(); }
   if(p=='teachers') { loadTeachers(); fillReportClsSelectors(); renderTeachersTable(); }
+  if(p=='manage')   initManagePage();
 }
 
 function load(t){ document.getElementById('loader').style.display=t?'flex':'none'; document.getElementById('load-txt').innerText=t; }
@@ -705,20 +1002,6 @@ async function processImportRows(rows, preview){
   preview.innerHTML = `
     <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;margin-bottom:10px">
       <b style="color:#15803d">พบ ${data.length} รายการ</b> — เพิ่มใหม่ได้ <b>${newRows.length}</b> คน, ซ้ำ (ข้าม) <b>${dupRows.length}</b> คน
-    </div>
-    <div style="overflow-x:auto;max-height:200px;overflow-y:auto">
-      <table style="width:100%;border-collapse:collapse;font-size:.85rem">
-        <tr style="background:#f8fafc"><th style="padding:6px 8px;text-align:left">รหัส</th><th style="padding:6px 8px;text-align:left">ชื่อ</th><th style="padding:6px 8px;text-align:left">ห้อง</th><th style="padding:6px 8px">สถานะ</th></tr>
-        ${data.map(r => {
-          var dup = existIds.includes(String(r[idIdx]).trim());
-          return `<tr style="border-top:1px solid #f1f5f9;${dup?'opacity:.4':''}">
-            <td style="padding:6px 8px">${r[idIdx]}</td>
-            <td style="padding:6px 8px">${r[nameIdx]}</td>
-            <td style="padding:6px 8px">${r[clsIdx]}</td>
-            <td style="padding:6px 8px;text-align:center">${dup?'<span style="color:#b45309">ซ้ำ</span>':'<span style="color:#15803d">ใหม่</span>'}</td>
-          </tr>`;
-        }).join('')}
-      </table>
     </div>
     <button class="btn btn-g" style="margin-top:10px" onclick="confirmImport(${JSON.stringify(newRows.map(r => [String(r[idIdx]).trim(), String(r[nameIdx]).trim(), String(r[clsIdx]).trim()]))})">
       ✅ ยืนยันนำเข้า ${newRows.length} คน
@@ -1020,21 +1303,19 @@ function renderTermReport(){
   document.getElementById('rp-term-out').innerHTML = html;
 }
 
-// ===== PRINT REPORT (รายวัน / รายเดือน / รายเทอม) =====
+// ===== PRINT REPORT =====
 function openPrintReport(type){
   var cls = '';
   var teacher = '';
   var title = '';
   var subtitle = '';
 
-  // ---- รายวัน ----
   if(type === 'day'){
     var date = document.getElementById('rp-date').value;
     cls      = document.getElementById('rp-cls').value;
     teacher  = TEACHERS[cls] || (cls ? '(ยังไม่ระบุครู)' : '');
     title    = 'รายงานการเข้าเรียนประจำวัน' + (cls?' ห้อง '+cls:'');
     subtitle = 'วันที่ ' + date;
-
     var students = DATA.students.filter(s => !cls || s.cls === cls);
     var map = {};
     DATA.attendance.filter(a=>a.date===date&&(!cls||a.cls===cls)).forEach(a=>map[a.id]=a);
@@ -1058,13 +1339,11 @@ function openPrintReport(type){
         <td style="padding:6px 8px"><span style="padding:3px 10px;border-radius:20px;font-size:.8rem;font-weight:600;background:${color};color:${tc}">${status}</span></td>
       </tr>`;
     }).join('');
-
     document.getElementById('pr-stats').innerHTML = `
       <div style="background:#f0fdf4;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#15803d;margin:0">มาเรียน</p><h2 style="color:#15803d;margin:4px 0 0">${p}</h2></div>
       <div style="background:#fefce8;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#b45309;margin:0">สาย</p><h2 style="color:#b45309;margin:4px 0 0">${l}</h2></div>
       <div style="background:#eff6ff;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#0369a1;margin:0">ป่วย</p><h2 style="color:#0369a1;margin:4px 0 0">${sick}</h2></div>
       <div style="background:#fef2f2;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#b91c1c;margin:0">ขาด</p><h2 style="color:#b91c1c;margin:4px 0 0">${ab}</h2></div>`;
-
     document.getElementById('pr-body').innerHTML = `
       <table style="width:100%;border-collapse:collapse;font-size:.88rem;margin-bottom:20px">
         <thead><tr style="background:#1e40af;color:white">
@@ -1074,89 +1353,45 @@ function openPrintReport(type){
         </tr></thead><tbody>${rows}</tbody>
       </table>`;
   }
-
-  // ---- รายเดือน ----
   else if(type === 'month'){
     var month = document.getElementById('rp-month-sel').value;
     cls       = document.getElementById('rp-cls-month').value;
     teacher   = TEACHERS[cls] || (cls ? '(ยังไม่ระบุครู)' : '');
-    var monthNames = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
-                      'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+    var monthNames = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
     var mParts = month.split('-');
     var mLabel = mParts.length===2 ? monthNames[parseInt(mParts[1])] + ' ' + mParts[0] : month;
     title    = 'รายงานการเข้าเรียนประจำเดือน' + (cls?' ห้อง '+cls:'');
     subtitle = mLabel;
-
     var students = DATA.students.filter(s => !cls || s.cls===cls);
     var days = [...new Set(DATA.attendance.filter(a=>a.date.startsWith(month)&&(!cls||a.cls===cls)).map(a=>a.date))].sort();
     var map = {};
     DATA.attendance.forEach(a=>{ if(a.date.startsWith(month)&&(!cls||a.cls===cls)){ if(!map[a.id]) map[a.id]={}; map[a.id][a.date]=a.status; } });
-
-    // สรุปสถิติรายเดือน
     var totalP=0, totalL=0, totalAb=0;
-    students.forEach(s=>{
-      days.forEach(d=>{
-        var st=(map[s.id]||{})[d];
-        if(!st||st==='ขาด'||st==='ลา') totalAb++;
-        else if(st==='มาเรียน') totalP++;
-        else if(st==='สาย') totalL++;
-      });
-    });
+    students.forEach(s=>{ days.forEach(d=>{ var st=(map[s.id]||{})[d]; if(!st||st==='ขาด'||st==='ลา') totalAb++; else if(st==='มาเรียน') totalP++; else if(st==='สาย') totalL++; }); });
     document.getElementById('pr-stats').innerHTML = `
       <div style="background:#f0fdf4;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#15803d;margin:0">วันเรียน</p><h2 style="color:#15803d;margin:4px 0 0">${days.length}</h2></div>
       <div style="background:#eff6ff;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#1d4ed8;margin:0">นักเรียน</p><h2 style="color:#1d4ed8;margin:4px 0 0">${students.length}</h2></div>
       <div style="background:#fefce8;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#b45309;margin:0">สาย (ครั้ง)</p><h2 style="color:#b45309;margin:4px 0 0">${totalL}</h2></div>
       <div style="background:#fef2f2;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#b91c1c;margin:0">ขาด (ครั้ง)</p><h2 style="color:#b91c1c;margin:4px 0 0">${totalAb}</h2></div>`;
-
-    // ตารางรายเดือน: นักเรียน × วัน (แบบ wrap ถ้าวันเยอะ)
-    var tableHtml = `<div style="overflow-x:auto;margin-bottom:16px">
-      <table style="width:100%;border-collapse:collapse;font-size:.78rem">
-        <thead><tr style="background:#1e40af;color:white">
-          <th style="padding:6px 8px;text-align:left;white-space:nowrap">#</th>
-          <th style="padding:6px 8px;text-align:left;white-space:nowrap">ชื่อ-นามสกุล</th>
-          ${days.map(d=>`<th style="padding:4px 6px;text-align:center">${d.substring(8)}</th>`).join('')}
-          <th style="padding:6px 8px;text-align:center;background:#166534">มา</th>
-          <th style="padding:6px 8px;text-align:center;background:#991b1b">ขาด</th>
-          <th style="padding:6px 8px;text-align:center;background:#1e3a5f">%</th>
-        </tr></thead><tbody>`;
+    var tableHtml = `<div style="overflow-x:auto;margin-bottom:16px"><table style="width:100%;border-collapse:collapse;font-size:.78rem">
+      <thead><tr style="background:#1e40af;color:white">
+        <th style="padding:6px 8px">#</th><th style="padding:6px 8px;text-align:left">ชื่อ-นามสกุล</th>
+        ${days.map(d=>`<th style="padding:4px 6px;text-align:center">${d.substring(8)}</th>`).join('')}
+        <th style="padding:6px 8px;text-align:center;background:#166534">มา</th>
+        <th style="padding:6px 8px;text-align:center;background:#991b1b">ขาด</th>
+        <th style="padding:6px 8px;text-align:center;background:#1e3a5f">%</th>
+      </tr></thead><tbody>`;
     students.forEach((s,i)=>{
       var p=0, ab=0;
-      var cells = days.map(d=>{
-        var st=(map[s.id]||{})[d];
-        if(!st){ ab++; return `<td style="padding:3px;text-align:center;background:#fee2e2;color:#b91c1c">ข</td>`; }
-        if(st==='มาเรียน'){ p++; return `<td style="padding:3px;text-align:center;background:#dcfce7;color:#15803d">✓</td>`; }
-        if(st==='สาย'){ p++; return `<td style="padding:3px;text-align:center;background:#fef3c7;color:#b45309">ส</td>`; }
-        if(st==='ป่วย'){ return `<td style="padding:3px;text-align:center;background:#e0f2fe;color:#0369a1">ป</td>`; }
-        if(st==='ลา'){ return `<td style="padding:3px;text-align:center;background:#f3e8ff;color:#7c3aed">ล</td>`; }
-        ab++; return `<td style="padding:3px;text-align:center;background:#fee2e2;color:#b91c1c">ข</td>`;
-      }).join('');
-      var pct = days.length ? Math.round(p/days.length*100) : 0;
-      var pc  = pct>=80?'#15803d':pct>=60?'#b45309':'#b91c1c';
-      var bg  = pct>=80?'#dcfce7':pct>=60?'#fef3c7':'#fee2e2';
-      tableHtml += `<tr style="border-top:1px solid #f1f5f9">
-        <td style="padding:5px 8px;color:#94a3b8;font-size:.75rem">${i+1}</td>
-        <td style="padding:5px 8px;white-space:nowrap">${s.name}</td>
-        ${cells}
-        <td style="padding:5px 8px;text-align:center;font-weight:700;color:#15803d">${p}</td>
-        <td style="padding:5px 8px;text-align:center;font-weight:700;color:#ef4444">${ab}</td>
-        <td style="padding:5px 8px;text-align:center"><span style="padding:2px 8px;border-radius:12px;font-weight:700;font-size:.75rem;background:${bg};color:${pc}">${pct}%</span></td>
-      </tr>`;
+      var cells = days.map(d=>{ var st=(map[s.id]||{})[d]; if(!st){ab++;return `<td style="padding:3px;text-align:center;background:#fee2e2;color:#b91c1c">ข</td>`;} if(st==='มาเรียน'){p++;return `<td style="padding:3px;text-align:center;background:#dcfce7;color:#15803d">✓</td>`;} if(st==='สาย'){p++;return `<td style="padding:3px;text-align:center;background:#fef3c7;color:#b45309">ส</td>`;} if(st==='ป่วย'){return `<td style="padding:3px;text-align:center;background:#e0f2fe;color:#0369a1">ป</td>`;} if(st==='ลา'){return `<td style="padding:3px;text-align:center;background:#f3e8ff;color:#7c3aed">ล</td>`;} ab++;return `<td style="padding:3px;text-align:center;background:#fee2e2;color:#b91c1c">ข</td>`; }).join('');
+      var pct=days.length?Math.round(p/days.length*100):0;
+      var pc=pct>=80?'#15803d':pct>=60?'#b45309':'#b91c1c';
+      var bg=pct>=80?'#dcfce7':pct>=60?'#fef3c7':'#fee2e2';
+      tableHtml+=`<tr style="border-top:1px solid #f1f5f9"><td style="padding:5px 8px;color:#94a3b8;font-size:.75rem">${i+1}</td><td style="padding:5px 8px;white-space:nowrap">${s.name}</td>${cells}<td style="padding:5px 8px;text-align:center;font-weight:700;color:#15803d">${p}</td><td style="padding:5px 8px;text-align:center;font-weight:700;color:#ef4444">${ab}</td><td style="padding:5px 8px;text-align:center"><span style="padding:2px 8px;border-radius:12px;font-weight:700;font-size:.75rem;background:${bg};color:${pc}">${pct}%</span></td></tr>`;
     });
     tableHtml += '</tbody></table></div>';
-
-    // คำอธิบายสัญลักษณ์
-    tableHtml += `<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:.78rem;color:#64748b;margin-bottom:8px">
-      <span><span style="background:#dcfce7;color:#15803d;padding:2px 6px;border-radius:4px">✓</span> มาเรียน</span>
-      <span><span style="background:#fef3c7;color:#b45309;padding:2px 6px;border-radius:4px">ส</span> สาย</span>
-      <span><span style="background:#e0f2fe;color:#0369a1;padding:2px 6px;border-radius:4px">ป</span> ป่วย</span>
-      <span><span style="background:#f3e8ff;color:#7c3aed;padding:2px 6px;border-radius:4px">ล</span> ลา</span>
-      <span><span style="background:#fee2e2;color:#b91c1c;padding:2px 6px;border-radius:4px">ข</span> ขาด</span>
-    </div>`;
-
     document.getElementById('pr-body').innerHTML = tableHtml;
   }
-
-  // ---- รายเทอม ----
   else if(type === 'term'){
     var start = document.getElementById('term-start').value;
     var end   = document.getElementById('term-end').value;
@@ -1165,73 +1400,33 @@ function openPrintReport(type){
     title     = 'รายงานสรุปการเข้าเรียนประจำเทอม' + (cls?' ห้อง '+cls:'');
     subtitle  = 'ช่วง ' + start + ' ถึง ' + end;
     if(!start||!end){ toast('กรุณากำหนดช่วงเทอมก่อน',true); return; }
-
     var students = DATA.students.filter(s => !cls || s.cls===cls);
-    var filtered = DATA.attendance.filter(a=>{
-      if(cls && a.cls!==cls) return false;
-      return a.date >= start && a.date <= end;
-    });
+    var filtered = DATA.attendance.filter(a=>{ if(cls && a.cls!==cls) return false; return a.date >= start && a.date <= end; });
     var days = [...new Set(filtered.map(a=>a.date))].sort();
     var map = {};
     filtered.forEach(a=>{ if(!map[a.id]) map[a.id]={}; map[a.id][a.date]=a.status; });
-
     var totalP=0,totalL=0,totalSick=0,totalAb=0;
     var tableRows='';
     students.forEach((s,i)=>{
       var p=0,l=0,sick=0,ab=0;
-      days.forEach(d=>{
-        var st=(map[s.id]||{})[d]||'ขาด';
-        if(st==='มาเรียน'){p++;totalP++;}
-        else if(st==='สาย'){l++;totalL++;}
-        else if(st==='ป่วย'){sick++;totalSick++;}
-        else{ab++;totalAb++;}
-      });
-      var pct = days.length ? Math.round((p+l)/days.length*100) : 0;
-      var bg  = pct>=80?'#dcfce7':pct>=60?'#fef3c7':'#fee2e2';
-      var tc  = pct>=80?'#15803d':pct>=60?'#b45309':'#b91c1c';
-      tableRows += `<tr style="border-top:1px solid #f1f5f9">
-        <td style="padding:7px 8px;color:#94a3b8;font-size:.8rem">${i+1}</td>
-        <td style="padding:7px 8px">${s.name}</td>
-        <td style="padding:7px 8px;text-align:center"><span style="padding:2px 8px;border-radius:12px;background:#eff6ff;color:#1d4ed8;font-size:.8rem">${s.cls}</span></td>
-        <td style="padding:7px 8px;text-align:center;font-weight:700;color:#15803d">${p}</td>
-        <td style="padding:7px 8px;text-align:center;font-weight:700;color:#b45309">${l}</td>
-        <td style="padding:7px 8px;text-align:center;font-weight:700;color:#0369a1">${sick}</td>
-        <td style="padding:7px 8px;text-align:center;font-weight:700;color:#ef4444">${ab}</td>
-        <td style="padding:7px 8px;text-align:center"><span style="padding:3px 10px;border-radius:16px;font-weight:700;font-size:.82rem;background:${bg};color:${tc}">${pct}%</span></td>
-      </tr>`;
+      days.forEach(d=>{ var st=(map[s.id]||{})[d]||'ขาด'; if(st==='มาเรียน'){p++;totalP++;} else if(st==='สาย'){l++;totalL++;} else if(st==='ป่วย'){sick++;totalSick++;} else{ab++;totalAb++;} });
+      var pct=days.length?Math.round((p+l)/days.length*100):0;
+      var bg=pct>=80?'#dcfce7':pct>=60?'#fef3c7':'#fee2e2';
+      var tc=pct>=80?'#15803d':pct>=60?'#b45309':'#b91c1c';
+      tableRows+=`<tr style="border-top:1px solid #f1f5f9"><td style="padding:7px 8px;color:#94a3b8;font-size:.8rem">${i+1}</td><td style="padding:7px 8px">${s.name}</td><td style="padding:7px 8px;text-align:center"><span style="padding:2px 8px;border-radius:12px;background:#eff6ff;color:#1d4ed8;font-size:.8rem">${s.cls}</span></td><td style="padding:7px 8px;text-align:center;font-weight:700;color:#15803d">${p}</td><td style="padding:7px 8px;text-align:center;font-weight:700;color:#b45309">${l}</td><td style="padding:7px 8px;text-align:center;font-weight:700;color:#0369a1">${sick}</td><td style="padding:7px 8px;text-align:center;font-weight:700;color:#ef4444">${ab}</td><td style="padding:7px 8px;text-align:center"><span style="padding:3px 10px;border-radius:16px;font-weight:700;font-size:.82rem;background:${bg};color:${tc}">${pct}%</span></td></tr>`;
     });
-
     document.getElementById('pr-stats').innerHTML = `
       <div style="background:#f0fdf4;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#15803d;margin:0">วันเรียน</p><h2 style="color:#15803d;margin:4px 0 0">${days.length}</h2></div>
       <div style="background:#eff6ff;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#1d4ed8;margin:0">นักเรียน</p><h2 style="color:#1d4ed8;margin:4px 0 0">${students.length}</h2></div>
       <div style="background:#fefce8;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#b45309;margin:0">สาย (ครั้งรวม)</p><h2 style="color:#b45309;margin:4px 0 0">${totalL}</h2></div>
       <div style="background:#fef2f2;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#b91c1c;margin:0">ขาด (ครั้งรวม)</p><h2 style="color:#b91c1c;margin:4px 0 0">${totalAb}</h2></div>`;
-
-    document.getElementById('pr-body').innerHTML = `
-      <div style="overflow-x:auto;margin-bottom:16px">
-        <table style="width:100%;border-collapse:collapse;font-size:.88rem">
-          <thead><tr style="background:#1e40af;color:white">
-            <th style="padding:8px">#</th>
-            <th style="padding:8px;text-align:left">ชื่อ-นามสกุล</th>
-            <th style="padding:8px">ห้อง</th>
-            <th style="padding:8px;color:#86efac">มาเรียน</th>
-            <th style="padding:8px;color:#fde68a">สาย</th>
-            <th style="padding:8px;color:#bae6fd">ป่วย</th>
-            <th style="padding:8px;color:#fca5a5">ขาด</th>
-            <th style="padding:8px">% มา</th>
-          </tr></thead>
-          <tbody>${tableRows}</tbody>
-        </table>
-      </div>
-      <p style="font-size:.78rem;color:#64748b">* % มา = (มาเรียน + สาย) / จำนวนวันเรียน × 100</p>`;
+    document.getElementById('pr-body').innerHTML = `<div style="overflow-x:auto;margin-bottom:16px"><table style="width:100%;border-collapse:collapse;font-size:.88rem"><thead><tr style="background:#1e40af;color:white"><th style="padding:8px">#</th><th style="padding:8px;text-align:left">ชื่อ-นามสกุล</th><th style="padding:8px">ห้อง</th><th style="padding:8px;color:#86efac">มาเรียน</th><th style="padding:8px;color:#fde68a">สาย</th><th style="padding:8px;color:#bae6fd">ป่วย</th><th style="padding:8px;color:#fca5a5">ขาด</th><th style="padding:8px">% มา</th></tr></thead><tbody>${tableRows}</tbody></table></div><p style="font-size:.78rem;color:#64748b">* % มา = (มาเรียน + สาย) / จำนวนวันเรียน × 100</p>`;
   }
 
-  // ---- ตั้งค่าหัวเอกสารและครู ----
   document.getElementById('pr-school').innerText  = CFG.schoolName || 'Smart School';
   document.getElementById('pr-title').innerText   = title;
   document.getElementById('pr-date').innerText    = subtitle;
   document.getElementById('pr-teacher').innerText = teacher;
-
   clearSig();
   document.getElementById('modal-print').style.display = 'block';
   initSigPad();
@@ -1270,6 +1465,7 @@ function initReportPage(){
   document.getElementById('rp-date').value       = ds;
   document.getElementById('rp-month-sel').value  = ms;
 }
+
 // ===== AUTH =====
 var CURRENT_USER = null;
 var PENDING_NAV = null;
@@ -1295,31 +1491,19 @@ function closeLogin() {
 async function doLogin() {
   var user = document.getElementById('login-user').value.trim();
   var pass = document.getElementById('login-pass').value;
-  if (!user || !pass) {
-    document.getElementById('login-err').innerText = 'กรุณากรอกให้ครบ';
-    return;
-  }
+  if (!user || !pass) { document.getElementById('login-err').innerText = 'กรุณากรอกให้ครบ'; return; }
   document.getElementById('login-err').innerText = '⏳ กำลังตรวจสอบ...';
-
-  // Hash password ฝั่ง client ก่อนส่ง
   var msgBuffer = new TextEncoder().encode(pass);
   var hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
   var hashArray = Array.from(new Uint8Array(hashBuffer));
   var hashHex = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('');
-
   try {
     var res = await apiCall({ action: 'login', sheet: 'Users', values: [user, hashHex] });
     if (res.role) {
       CURRENT_USER = { username: user, role: res.role };
       document.getElementById('login-modal').style.display = 'none';
-      
-      // อัพเดต UI
       updateAdminUI();
-      
-      if (PENDING_NAV) {
-        go(PENDING_NAV.page, PENDING_NAV.btn);
-        PENDING_NAV = null;
-      }
+      if (PENDING_NAV) { go(PENDING_NAV.page, PENDING_NAV.btn); PENDING_NAV = null; }
       toast('ยินดีต้อนรับ ' + user + ' (' + res.role + ')');
     } else {
       document.getElementById('login-err').innerText = '❌ ' + (res.msg || 'ไม่สำเร็จ');
@@ -1327,29 +1511,27 @@ async function doLogin() {
   } catch(e) {
     document.getElementById('login-err').innerText = '❌ ' + e.message;
   }
-  
 }
 
 function updateAdminUI() {
   var isAdmin = CURRENT_USER && CURRENT_USER.role === 'admin';
   var d = isAdmin ? 'block' : 'none';
-// ซ่อนปุ่ม login เมื่อเป็น admin แล้ว
   document.getElementById('btn-login').style.display = isAdmin ? 'none' : 'block';
-  // แสดง/ซ่อน tab และปุ่มตั้งค่า
   document.getElementById('nav-add').style.display      = d;
   document.getElementById('nav-reg').style.display      = d;
   document.getElementById('nav-teachers').style.display = d;
+  document.getElementById('nav-manage').style.display   = d;
   document.getElementById('btn-settings').style.display = d;
-
-  // อัพเดต header
   var titleEl = document.getElementById('app-title');
+  var icon = CFG.schoolIcon || '🏫';
+  var name = CFG.schoolName || 'Smart School';
   if (isAdmin) {
-    titleEl.innerHTML = '🏫 ' + CFG.schoolName +
+    titleEl.innerHTML = icon+' '+name +
       ' <span style="font-size:.75rem;background:#eff6ff;color:#2563eb;padding:2px 8px;border-radius:12px;margin-left:8px">👤 ' +
       CURRENT_USER.username + '</span>' +
       ' <span style="font-size:.75rem;background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:12px;margin-left:4px;cursor:pointer" onclick="logout()">ออกจากระบบ</span>';
   } else {
-    titleEl.innerText = '🏫 ' + (CFG.schoolName || 'Smart School');
+    titleEl.innerText = icon+' '+name;
   }
 }
 
@@ -1360,6 +1542,277 @@ function logout() {
   go('dash', document.querySelector('nav button'));
   toast('ออกจากระบบแล้ว');
 }
+
+// ===================================================================
+// ===== MANAGE PAGE FUNCTIONS =====
+// ===================================================================
+
+function initManagePage(){
+  // Build color preset swatches
+  var presetsEl = document.getElementById('preset-colors');
+  if(presetsEl && !presetsEl.children.length){
+    COLOR_PRESETS.forEach(c=>{
+      var sw = document.createElement('div');
+      sw.className = 'preset-color';
+      sw.style.background = c;
+      sw.title = c;
+      if(c === (CFG.primaryColor||'#2563eb')) sw.classList.add('selected');
+      sw.onclick = ()=>{
+        document.getElementById('mg-color-primary').value = c;
+        document.querySelectorAll('.preset-color').forEach(x=>x.classList.remove('selected'));
+        sw.classList.add('selected');
+        updateHeaderPreview();
+      };
+      presetsEl.appendChild(sw);
+    });
+  }
+
+  // Load current values into form
+  document.getElementById('mg-school-name').value     = CFG.schoolName     || '';
+  document.getElementById('mg-school-abbr').value     = CFG.schoolAbbr     || '';
+  document.getElementById('mg-school-addr').value     = CFG.schoolAddr     || '';
+  document.getElementById('mg-school-tel').value      = CFG.schoolTel      || '';
+  document.getElementById('mg-school-email').value    = CFG.schoolEmail    || '';
+  document.getElementById('mg-school-web').value      = CFG.schoolWeb      || '';
+  document.getElementById('mg-school-icon').value     = CFG.schoolIcon     || '🏫';
+  document.getElementById('mg-school-subtitle').value = CFG.schoolSubtitle || '';
+  document.getElementById('mg-color-primary').value   = CFG.primaryColor   || '#2563eb';
+  document.getElementById('mg-header-text').value     = CFG.headerText     || '';
+  document.getElementById('mg-script-url').value      = CFG.url            || '';
+
+  // Time settings
+  var timeSettings = JSON.parse(localStorage.getItem('ss_time')||'{}');
+  document.getElementById('mg-time-ontime').value = timeSettings.ontime || '07:30';
+  document.getElementById('mg-time-late').value   = timeSettings.late   || '08:00';
+  document.getElementById('mg-time-close').value  = timeSettings.close  || '12:00';
+  document.getElementById('mg-school-days').value = timeSettings.days   || '1-5';
+
+  // Live preview listeners
+  ['mg-school-name','mg-school-abbr','mg-school-addr'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', updateOrgPreview);
+  });
+  ['mg-color-primary','mg-school-icon','mg-header-text'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', updateHeaderPreview);
+  });
+
+  updateOrgPreview();
+  updateHeaderPreview();
+  refreshSystemStats();
+}
+
+function updateOrgPreview(){
+  var name = document.getElementById('mg-school-name').value || 'Smart School';
+  var abbr = document.getElementById('mg-school-abbr').value;
+  var addr = document.getElementById('mg-school-addr').value;
+  document.getElementById('pv-name').innerText = name;
+  document.getElementById('pv-abbr').innerText = abbr;
+  document.getElementById('pv-abbr').style.display = abbr ? 'inline' : 'none';
+  document.getElementById('pv-addr').innerText = addr;
+}
+
+function updateHeaderPreview(){
+  var color = document.getElementById('mg-color-primary').value;
+  var icon  = document.getElementById('mg-school-icon').value || '🏫';
+  var txt   = document.getElementById('mg-header-text').value || document.getElementById('mg-school-name').value || 'Smart School';
+  var pv = document.getElementById('pv-header');
+  pv.innerText = icon+' '+txt;
+  pv.style.color = color;
+  document.getElementById('mg-nav-preview').style.borderBottomColor = color;
+}
+
+// ─── บันทึกข้อมูลองค์กร → Sheet ───
+async function saveOrgToSheet(){
+  var name  = document.getElementById('mg-school-name').value.trim();
+  if(!name){ toast('กรอกชื่อโรงเรียนก่อน', true); return; }
+  var payload = [
+    'school_name',   name,
+    'school_abbr',   document.getElementById('mg-school-abbr').value.trim(),
+    'school_addr',   document.getElementById('mg-school-addr').value.trim(),
+    'school_tel',    document.getElementById('mg-school-tel').value.trim(),
+    'school_email',  document.getElementById('mg-school-email').value.trim(),
+    'school_web',    document.getElementById('mg-school-web').value.trim(),
+    'school_icon',   document.getElementById('mg-school-icon').value.trim()||'🏫',
+    'school_subtitle',document.getElementById('mg-school-subtitle').value.trim(),
+  ];
+  load('บันทึกลง Sheet...');
+  try{
+    // บันทึกทีละ key-value ลง sheet "Settings"
+    for(var i=0; i<payload.length; i+=2){
+      await upsertSetting(payload[i], payload[i+1]);
+    }
+    applyOrgLocal();
+    toast('บันทึกข้อมูลองค์กรลง Sheet เรียบร้อย');
+  }catch(e){ toast('Error: '+e.message, true); }
+  load('');
+}
+
+// ─── โหลดข้อมูลองค์กรจาก Sheet ───
+async function loadOrgFromSheet(){
+  load('โหลดจาก Sheet...');
+  try{
+    var r = await apiCall({action:'get', sheet:'Settings'});
+    var rows = (r.values||[]).slice(1);
+    var map = {};
+    rows.forEach(row=>{ if(row[0]) map[String(row[0])] = String(row[1]||''); });
+    if(map.school_name)     document.getElementById('mg-school-name').value     = map.school_name;
+    if(map.school_abbr)     document.getElementById('mg-school-abbr').value     = map.school_abbr;
+    if(map.school_addr)     document.getElementById('mg-school-addr').value     = map.school_addr;
+    if(map.school_tel)      document.getElementById('mg-school-tel').value      = map.school_tel;
+    if(map.school_email)    document.getElementById('mg-school-email').value    = map.school_email;
+    if(map.school_web)      document.getElementById('mg-school-web').value      = map.school_web;
+    if(map.school_icon)     document.getElementById('mg-school-icon').value     = map.school_icon;
+    if(map.school_subtitle) document.getElementById('mg-school-subtitle').value = map.school_subtitle;
+    if(map.primary_color)   document.getElementById('mg-color-primary').value   = map.primary_color;
+    updateOrgPreview(); updateHeaderPreview();
+    toast('โหลดข้อมูลจาก Sheet เรียบร้อย');
+  }catch(e){ toast('Error: '+e.message, true); }
+  load('');
+}
+
+// ─── ใช้งานทันที (Local) ───
+function applyOrgLocal(){
+  CFG.schoolName     = document.getElementById('mg-school-name').value.trim() || CFG.schoolName;
+  CFG.schoolAbbr     = document.getElementById('mg-school-abbr').value.trim();
+  CFG.schoolAddr     = document.getElementById('mg-school-addr').value.trim();
+  CFG.schoolTel      = document.getElementById('mg-school-tel').value.trim();
+  CFG.schoolEmail    = document.getElementById('mg-school-email').value.trim();
+  CFG.schoolWeb      = document.getElementById('mg-school-web').value.trim();
+  CFG.schoolIcon     = document.getElementById('mg-school-icon').value.trim()||'🏫';
+  CFG.schoolSubtitle = document.getElementById('mg-school-subtitle').value.trim();
+  saveCfg();
+  applyThemeFromCfg();
+  updateAdminUI();
+  toast('อัพเดตข้อมูลองค์กรแล้ว');
+}
+
+// ─── บันทึกเวลา → Sheet ───
+async function saveTimeToSheet(){
+  var payload = {
+    ontime: document.getElementById('mg-time-ontime').value,
+    late:   document.getElementById('mg-time-late').value,
+    close:  document.getElementById('mg-time-close').value,
+    days:   document.getElementById('mg-school-days').value,
+  };
+  load('บันทึก...');
+  try{
+    await upsertSetting('time_ontime', payload.ontime);
+    await upsertSetting('time_late',   payload.late);
+    await upsertSetting('time_close',  payload.close);
+    await upsertSetting('school_days', payload.days);
+    applyTimeLocal();
+    toast('บันทึกตั้งค่าเวลาลง Sheet เรียบร้อย');
+  }catch(e){ toast('Error: '+e.message, true); }
+  load('');
+}
+
+function applyTimeLocal(){
+  var t = {
+    ontime: document.getElementById('mg-time-ontime').value,
+    late:   document.getElementById('mg-time-late').value,
+    close:  document.getElementById('mg-time-close').value,
+    days:   document.getElementById('mg-school-days').value,
+  };
+  localStorage.setItem('ss_time', JSON.stringify(t));
+  toast('บันทึกตั้งค่าเวลา (Local) แล้ว');
+}
+
+// ─── บันทึก Theme → Sheet ───
+async function saveThemeToSheet(){
+  load('บันทึก...');
+  try{
+    await upsertSetting('primary_color',  document.getElementById('mg-color-primary').value);
+    await upsertSetting('header_text',    document.getElementById('mg-header-text').value.trim());
+    await upsertSetting('school_icon',    document.getElementById('mg-school-icon').value.trim()||'🏫');
+    await upsertSetting('school_subtitle',document.getElementById('mg-school-subtitle').value.trim());
+    applyThemeLocal();
+    toast('บันทึก Theme ลง Sheet เรียบร้อย');
+  }catch(e){ toast('Error: '+e.message, true); }
+  load('');
+}
+
+function applyThemeLocal(){
+  CFG.primaryColor   = document.getElementById('mg-color-primary').value;
+  CFG.headerText     = document.getElementById('mg-header-text').value.trim();
+  CFG.schoolIcon     = document.getElementById('mg-school-icon').value.trim()||'🏫';
+  CFG.schoolSubtitle = document.getElementById('mg-school-subtitle').value.trim();
+  saveCfg();
+  applyThemeFromCfg();
+  updateAdminUI();
+  toast('ใช้งาน Theme ใหม่แล้ว');
+}
+
+function resetTheme(){
+  if(!confirm('รีเซ็ต Theme กลับค่าเริ่มต้น?')) return;
+  CFG.primaryColor = '#2563eb';
+  CFG.schoolIcon   = '🏫';
+  CFG.headerText   = '';
+  saveCfg();
+  document.getElementById('mg-color-primary').value = '#2563eb';
+  document.getElementById('mg-school-icon').value   = '🏫';
+  document.getElementById('mg-header-text').value   = '';
+  applyThemeFromCfg();
+  updateHeaderPreview();
+  toast('รีเซ็ต Theme แล้ว');
+}
+
+// ─── บันทึก Script URL ───
+async function saveScriptUrl(){
+  var url = document.getElementById('mg-script-url').value.trim();
+  if(!url || !url.includes('script.google.com')){ toast('URL ไม่ถูกต้อง', true); return; }
+  CFG.url = url;
+  saveCfg();
+  toast('บันทึก URL แล้ว — กำลังรีโหลดข้อมูล...');
+  await loadData();
+}
+
+async function testConnection(){
+  var result = document.getElementById('mg-conn-result');
+  result.innerHTML = '⏳ กำลังทดสอบ...';
+  try{
+    var t0 = Date.now();
+    var r = await apiCall({action:'get', sheet:'Students'});
+    var ms = Date.now()-t0;
+    result.innerHTML = `<span style="color:#15803d;font-weight:600">✅ เชื่อมต่อสำเร็จ</span> — ตอบกลับใน ${ms}ms | Students: ${(r.values||[]).length-1} แถว`;
+  }catch(e){
+    result.innerHTML = `<span style="color:#b91c1c;font-weight:600">❌ เชื่อมต่อไม่ได้</span> — ${e.message}`;
+  }
+}
+
+// ─── ล้าง Local ───
+function clearLocalSettings(){
+  if(!confirm('ล้างการตั้งค่า Local ทั้งหมด? (จะต้องกรอก URL ใหม่)')) return;
+  localStorage.removeItem('ss_cfg3');
+  localStorage.removeItem('ss_term');
+  localStorage.removeItem('ss_time');
+  localStorage.removeItem('ss_teachers');
+  toast('ล้างการตั้งค่า Local แล้ว — กำลังรีโหลด...');
+  setTimeout(()=>location.reload(), 1200);
+}
+
+// ─── สถิติระบบ ───
+function refreshSystemStats(){
+  document.getElementById('sys-students').innerText = DATA.students.length;
+  document.getElementById('sys-att').innerText      = DATA.attendance.length;
+  document.getElementById('sys-face').innerText     = DATA.students.filter(s=>s.desc).length;
+  document.getElementById('sys-cls').innerText      = new Set(DATA.students.map(s=>s.cls).filter(Boolean)).size;
+}
+
+// ─── Helper: Upsert ลง Sheet "Settings" (key-value) ───
+async function upsertSetting(key, value){
+  // ลองหาแถวที่มี key อยู่แล้ว แล้ว update; ถ้าไม่มีให้ append
+  var r = await apiCall({action:'get', sheet:'Settings'});
+  var rows = (r.values||[]);
+  var found = -1;
+  for(var i=1; i<rows.length; i++){
+    if(String(rows[i][0]) === key){ found=i+1; break; }
+  }
+  if(found > 0){
+    await apiCall({action:'update', sheet:'Settings', range:`A${found}:B${found}`, values:[key, value]});
+  } else {
+    await apiCall({action:'append', sheet:'Settings', values:[key, value]});
+  }
+}
+
 </script>
 </body>
 </html>
