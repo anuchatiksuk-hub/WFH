@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Smart School - เช็คชื่อ AI</title>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
-  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     body{font-family:'Sarabun',sans-serif;background:#f1f5f9;color:#0f172a}
@@ -653,7 +653,7 @@
 <script>
 var CFG={}, DATA={students:[],attendance:[]}, MATCHER=null;
 var stream=null, aiInterval=null, currentFace=null;
-const MODEL_URL = './weights';
+const MODEL_URL = 'https://cdn.jsdelivr.net/gh/cgarciagl/face-api.js@0.22.2/weights';
 
 // ─── color presets ───
 var COLOR_PRESETS = [
@@ -730,10 +730,30 @@ async function loadData(){
     var r1=await apiCall({action:'get',sheet:'Students'});
     var rows=(r1.values||[]).slice(1);
     DATA.students=rows.map((r,i)=>({id:String(r[0]||''),name:String(r[1]||''),cls:String(r[2]||''),desc:String(r[3]||''),rowNum:i+2}));
-
-    var r2=await apiCall({action:'get',sheet:'Attendance'});
-    var arows=(r2.values||[]).slice(1);
-    DATA.attendance=arows.map((r,i)=>({ts:String(r[0]||''),date:String(r[1]||''),id:String(r[2]||''),name:String(r[3]||''),cls:String(r[4]||''),status:String(r[5]||''),rowNum:i+2}));
+ var r2=await apiCall({action:'get',sheet:'Attendance'});
+var arows=(r2.values||[]).slice(1);
+DATA.attendance=arows.map((r,i)=>{
+  var rawDate = String(r[1]||'');
+  // ✅ ตัด ISO format ให้เหลือแค่ YYYY-MM-DD
+  var date;
+if (rawDate.includes('T')) {
+  var d = new Date(rawDate);
+  // บวก timezone ไทย UTC+7
+  d = new Date(d.getTime() + 7*60*60*1000);
+  date = d.toISOString().substring(0,10);
+} else {
+  date = rawDate.length > 10 ? rawDate.substring(0,10) : rawDate;
+}
+  return {
+    ts:String(r[0]||''),
+    date:date,
+    id:String(r[2]||''),
+    name:String(r[3]||''),
+    cls:String(r[4]||''),
+    status:String(r[5]||''),
+    rowNum:i+2
+  };
+});
 
     buildMatcher(); renderDash(); renderStudents(); fillRegSel();
     await loadTeachers();
@@ -747,30 +767,62 @@ function setToday(){
   renderDash();
 }
 
+function parseTime(ts) {
+  if (!ts) return '-';
+  if (ts.includes('T')) {
+    var d = new Date(ts);
+    // ✅ บวก UTC+7
+    d = new Date(d.getTime() + 7*60*60*1000);
+    return d.toISOString().substring(11,16);
+  }
+  return ts.length >= 16 ? ts.substring(11,16) : '-';
+}
+
 function renderDash(){
-  var date=document.getElementById('sel-date').value;
-  var search=(document.getElementById('search').value||'').toLowerCase();
-  var map={};
+  var date   = document.getElementById('sel-date').value;
+  var search = (document.getElementById('search').value||'').toLowerCase();
+  var map    = {};
   DATA.attendance.forEach(a=>{ if(a.date==date) map[a.id]=a; });
   var p=0,l=0,ab=0,total=0;
   var html='<tr><th>รหัส</th><th>ชื่อ</th><th>ห้อง</th><th>เวลา</th><th>สถานะ/จัดการ</th></tr>';
+
+  var myClass = getMyClass();
+  var isAdmin = CURRENT_USER && CURRENT_USER.role === 'admin';
+
   DATA.students.forEach(s=>{
     if(search&&!s.name.toLowerCase().includes(search)&&!s.id.includes(search)) return;
     total++;
     var rec=map[s.id], badge='', time='-';
+    var canManage = isAdmin || (myClass && s.cls === myClass);
+
     if(rec){
-      time=rec.ts.length>=16?rec.ts.substring(11,16):'-';
-      if(rec.status=='มาเรียน'){p++;badge='<span class="badge ok">มาเรียน</span>';}
-      else if(rec.status=='สาย'){l++;badge='<span class="badge late">สาย</span>';}
-      else{ab++;badge='<span class="badge abs">'+rec.status+'</span>';}
-      badge+=` <button class="btn" style="padding:3px 8px;font-size:.75rem;background:#6b7280;color:white" onclick="editCheck('${s.id}','${s.name}','${s.cls}')">✏️</button>`;
+      time = parseTime(rec.ts);
+      if(rec.status=='มาเรียน'){
+        p++;
+        badge='<span class="badge ok">มาเรียน</span>';
+      } else if(rec.status=='สาย'){
+        l++;
+        badge=`<span class="badge late">สาย ${parseTime(rec.ts)}</span>`;
+      } else {
+        ab++;
+        badge='<span class="badge abs">'+rec.status+'</span>';
+      }
+      if(canManage){
+        badge += ` <button class="btn" style="padding:3px 8px;font-size:.75rem;background:#6b7280;color:white" onclick="editCheck('${s.id}','${s.name}','${s.cls}')">✏️</button>`;
+      }
     } else {
-      badge=`<button class="btn btn-g" style="padding:3px 8px;font-size:.75rem" onclick="quickCheck('${s.id}','${s.name}','${s.cls}','มาเรียน')">มา</button>
-             <button class="btn btn-w" style="padding:3px 8px;font-size:.75rem" onclick="quickCheck('${s.id}','${s.name}','${s.cls}','สาย')">สาย</button>
-             <button class="btn btn-r" style="padding:3px 8px;font-size:.75rem" onclick="quickCheck('${s.id}','${s.name}','${s.cls}','ขาด')">ขาด</button>`;
+      if(canManage){
+        badge=`
+          <button class="btn btn-g" style="padding:3px 8px;font-size:.75rem" onclick="quickCheckAuto('${s.id}','${s.name}','${s.cls}','มาเรียน')">มา</button>
+          <button class="btn btn-w" style="padding:3px 8px;font-size:.75rem" onclick="pickLateTime('${s.id}','${s.name}','${s.cls}')">สาย</button>
+          <button class="btn btn-r" style="padding:3px 8px;font-size:.75rem" onclick="quickCheck('${s.id}','${s.name}','${s.cls}','ขาด')">ขาด</button>`;
+      } else {
+        badge = '<span style="color:#cbd5e1;font-size:.8rem">—</span>';
+      }
     }
     html+=`<tr><td>${s.id}</td><td>${s.name}</td><td>${s.cls}</td><td>${time}</td><td>${badge}</td></tr>`;
   });
+
   document.getElementById('tb-dash').innerHTML=html;
   document.getElementById('s-total').innerText=total;
   document.getElementById('s-p').innerText=p;
@@ -778,29 +830,155 @@ function renderDash(){
   document.getElementById('s-a').innerText=ab;
 }
 
-async function editCheck(id,name,cls){
-  var s=prompt('สถานะใหม่ (มาเรียน/สาย/ป่วย/ลา/ขาด):'); if(!s) return;
-  load('บันทึก...'); try{ await saveCheckIn(id,name,cls,s); await loadData(); }catch(e){ toast('Error: '+e.message,true); } load('');
+function editCheck(id, name, cls) {
+  var existing = document.getElementById('edit-modal');
+  if (existing) existing.remove();
+
+  var date = document.getElementById('sel-date').value;
+  var rec  = DATA.attendance.find(a => a.id==id && a.date==date);
+  var curStatus = rec ? rec.status : '';
+
+  var modal = document.createElement('div');
+  modal.id  = 'edit-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:white;border-radius:16px;padding:28px;max-width:360px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+      <h3 style="color:#2563eb;margin-bottom:4px;font-size:1.2rem">✏️ แก้ไขการเช็คชื่อ</h3>
+      <p style="color:#64748b;font-size:.9rem;margin-bottom:20px">${name} — ห้อง ${cls}</p>
+
+      <!-- ปุ่มเลือกสถานะ -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+        <button onclick="editSetStatus('มาเรียน')" id="es-มาเรียน"
+          class="btn" style="background:${curStatus==='มาเรียน'?'#22c55e':'#f1f5f9'};color:${curStatus==='มาเรียน'?'white':'#374151'}">
+          ✅ มาเรียน</button>
+        <button onclick="editSetStatus('สาย')" id="es-สาย"
+          class="btn" style="background:${curStatus==='สาย'?'#f59e0b':'#f1f5f9'};color:${curStatus==='สาย'?'white':'#374151'}">
+          ⏰ สาย</button>
+        <button onclick="editSetStatus('ป่วย')" id="es-ป่วย"
+          class="btn" style="background:${curStatus==='ป่วย'?'#3b82f6':'#f1f5f9'};color:${curStatus==='ป่วย'?'white':'#374151'}">
+          🤒 ป่วย</button>
+        <button onclick="editSetStatus('ลา')" id="es-ลา"
+          class="btn" style="background:${curStatus==='ลา'?'#7c3aed':'#f1f5f9'};color:${curStatus==='ลา'?'white':'#374151'}">
+          📋 ลา</button>
+        <button onclick="editSetStatus('ขาด')" id="es-ขาด"
+          class="btn" style="background:${curStatus==='ขาด'?'#ef4444':'#f1f5f9'};color:${curStatus==='ขาด'?'white':'#374151'};grid-column:span 2">
+          ❌ ขาด</button>
+      </div>
+
+      <!-- เวลา (แสดงเมื่อเลือก สาย) -->
+      <div id="edit-time-row" style="display:${curStatus==='สาย'?'block':'none'};margin-bottom:14px">
+        <label style="font-size:.85rem;font-weight:600;color:#475569;display:block;margin-bottom:5px">⏰ เวลาที่มาถึง</label>
+        <input id="edit-time-val" type="time" value="${rec&&rec.ts?parseTime(rec.ts):'08:00'}"
+          style="width:100%;font-size:1.4rem;text-align:center;padding:10px;border:2px solid #f59e0b;border-radius:10px;color:#b45309;font-weight:700">
+      </div>
+
+      <!-- สาเหตุ (แสดงเมื่อเลือก ลา) -->
+      <div id="edit-reason-row" style="display:${curStatus==='ลา'?'block':'none'};margin-bottom:14px">
+        <label style="font-size:.85rem;font-weight:600;color:#475569;display:block;margin-bottom:5px">📋 สาเหตุการลา</label>
+        <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+          <button onclick="editSetReason('ลาป่วย')"   class="btn" style="padding:6px 12px;font-size:.85rem;background:#eff6ff;color:#1d4ed8">🤒 ลาป่วย</button>
+          <button onclick="editSetReason('ลากิจ')"    class="btn" style="padding:6px 12px;font-size:.85rem;background:#eff6ff;color:#1d4ed8">📁 ลากิจ</button>
+          <button onclick="editSetReason('อื่นๆ')"    class="btn" style="padding:6px 12px;font-size:.85rem;background:#eff6ff;color:#1d4ed8">📝 อื่นๆ</button>
+        </div>
+        <input id="edit-reason-val" placeholder="ระบุสาเหตุ..." 
+          style="width:100%;padding:8px 12px;border:1.5px solid #cbd5e1;border-radius:8px;font-family:Sarabun">
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-p" style="flex:1" onclick="confirmEdit('${id}','${name}','${cls}')">💾 บันทึก</button>
+        <button class="btn" style="background:#f1f5f9;color:#64748b" onclick="document.getElementById('edit-modal').remove()">ยกเลิก</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
 }
 
+var _editStatus = '';
+
+function editSetStatus(s) {
+  _editStatus = s;
+  // reset ปุ่มทั้งหมด
+  var colors = { มาเรียน:'#22c55e', สาย:'#f59e0b', ป่วย:'#3b82f6', ลา:'#7c3aed', ขาด:'#ef4444' };
+  Object.keys(colors).forEach(k => {
+    var btn = document.getElementById('es-'+k);
+    if (!btn) return;
+    btn.style.background = k===s ? colors[k] : '#f1f5f9';
+    btn.style.color      = k===s ? 'white' : '#374151';
+  });
+  document.getElementById('edit-time-row').style.display   = s==='สาย' ? 'block' : 'none';
+  document.getElementById('edit-reason-row').style.display = s==='ลา'  ? 'block' : 'none';
+}
+
+function editSetReason(r) {
+  document.getElementById('edit-reason-val').value = r;
+}
+
+async function confirmEdit(id, name, cls) {
+  if (!_editStatus) { toast('เลือกสถานะก่อน', true); return; }
+
+  var status = _editStatus;
+
+  // ถ้าสาย — เอาเวลามาต่อ
+  if (status === 'สาย') {
+    var t = document.getElementById('edit-time-val').value;
+    if (t) status = 'สาย'; // เวลาจะถูก save ใน ts
+  }
+
+  // ถ้าลา — เอาสาเหตุมาต่อ
+  if (_editStatus === 'ลา') {
+    var reason = document.getElementById('edit-reason-val').value.trim();
+    if (reason) status = 'ลา ('+reason+')';
+  }
+
+  document.getElementById('edit-modal').remove();
+  load('บันทึก...');
+  try {
+    await saveCheckIn(id, name, cls, status);
+  } catch(e) { toast('Error: '+e.message, true); }
+  load('');
+}
 async function quickCheck(id,name,cls,status){
   load('บันทึก...'); try{ await saveCheckIn(id,name,cls,status); await loadData(); }catch(e){ toast('Error: '+e.message,true); } load('');
 }
 
-async function saveCheckIn(id,name,cls,status){
-  var date=document.getElementById('sel-date').value;
-  var now=new Date();
-  var ts=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '+
-    String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
-  var existing=DATA.attendance.find(a=>a.id==id&&a.date==date);
-  if(existing){
-    await apiCall({action:'update',sheet:'Attendance',range:`A${existing.rowNum}:F${existing.rowNum}`,values:[ts,date,id,name,cls,status]});
+// แทนที่ฟังก์ชัน saveCheckIn เดิม
+async function saveCheckIn(id, name, cls, status) {
+  var date = document.getElementById('sel-date').value;
+  var now  = new Date();
+  var ts   = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+
+             String(now.getDate()).padStart(2,'0')+' '+
+             String(now.getHours()).padStart(2,'0')+':'+
+             String(now.getMinutes()).padStart(2,'0')+':'+
+             String(now.getSeconds()).padStart(2,'0');
+
+  // ✅ แปลง date ก่อนเปรียบเทียบ (รองรับ ISO format)
+  var existing = DATA.attendance.find(a => {
+    var d = a.date.length > 10 ? a.date.substring(0,10) : a.date;
+    return a.id == id && d == date;
+  });
+
+  if (existing) {
+    // ✅ ถ้ามีแล้ว อัพเดตได้เฉพาะ สาย/ป่วย/ลา/ขาด — ถ้า "มาเรียน" อยู่แล้วไม่ให้ทับ
+    if (existing.status === 'มาเรียน' && status === 'มาเรียน') {
+      toast('บันทึกแล้ว: '+name+' มาเรียนวันนี้', false);
+      return;
+    }
+    await apiCall({action:'update', sheet:'Attendance',
+      range:`A${existing.rowNum}:F${existing.rowNum}`,
+      values:[ts, date, id, name, cls, status]});
+    existing.ts     = ts;
+    existing.status = status;
     toast('อัพเดต: '+name+' → '+status);
   } else {
-    await apiCall({action:'append',sheet:'Attendance',values:[ts,date,id,name,cls,status]});
+    await apiCall({action:'append', sheet:'Attendance',
+      values:[ts, date, id, name, cls, status]});
+    DATA.attendance.push({ ts, date, id, name, cls, status,
+      rowNum: DATA.attendance.length + 2 });
     toast('บันทึก: '+name+' → '+status);
   }
+
+  renderDash();
 }
+
 
 async function addStudent(){
   var id=document.getElementById('add-id').value.trim();
@@ -1522,6 +1700,7 @@ function updateAdminUI() {
   document.getElementById('nav-teachers').style.display = d;
   document.getElementById('nav-manage').style.display   = d;
   document.getElementById('btn-settings').style.display = d;
+  renderDash();
   var titleEl = document.getElementById('app-title');
   var icon = CFG.schoolIcon || '🏫';
   var name = CFG.schoolName || 'Smart School';
@@ -1812,7 +1991,79 @@ async function upsertSetting(key, value){
     await apiCall({action:'append', sheet:'Settings', values:[key, value]});
   }
 }
+// ===== TEACHER CLASS HELPER =====
+function getMyClass(){
+  if(!CURRENT_USER) return null;
+  // หาว่า CURRENT_USER.username เป็นครูประจำชั้นห้องไหน
+  // TEACHERS = { cls: teacherName }
+  for(var cls in TEACHERS){
+    if(TEACHERS[cls] === CURRENT_USER.username) return cls;
+  }
+  return null;
+}
 
+// ===== กด "มา" — บันทึกเวลาปัจจุบัน =====
+async function quickCheckAuto(id, name, cls, status){
+  load('บันทึก...');
+  try{ await saveCheckIn(id, name, cls, status); await loadData(); }
+  catch(e){ toast('Error: '+e.message, true); }
+  load('');
+}
+
+// ===== กด "สาย" — popup time picker =====
+function pickLateTime(id, name, cls){
+  // สร้าง modal time picker
+  var existing = document.getElementById('late-modal');
+  if(existing) existing.remove();
+
+  var now = new Date();
+  var hh  = String(now.getHours()).padStart(2,'0');
+  var mm  = String(now.getMinutes()).padStart(2,'0');
+
+  var modal = document.createElement('div');
+  modal.id  = 'late-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:white;border-radius:16px;padding:28px;max-width:340px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+      <h3 style="color:#f59e0b;margin-bottom:6px;font-size:1.2rem">⏰ บันทึกเวลาสาย</h3>
+      <p style="color:#64748b;font-size:.9rem;margin-bottom:18px">${name} — ห้อง ${cls}</p>
+      <label style="font-size:.85rem;font-weight:600;color:#475569;display:block;margin-bottom:6px">เวลาที่มาถึง</label>
+      <input id="late-time-input" type="time" value="${hh}:${mm}"
+        style="width:100%;font-size:1.6rem;text-align:center;padding:12px;border:2px solid #f59e0b;border-radius:10px;color:#b45309;font-weight:700;margin-bottom:18px">
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-w" style="flex:1;font-size:1rem" onclick="confirmLate('${id}','${name}','${cls}')">✅ ยืนยัน สาย</button>
+        <button class="btn" style="background:#f1f5f9;color:#64748b" onclick="document.getElementById('late-modal').remove()">ยกเลิก</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  // focus input
+  setTimeout(()=> document.getElementById('late-time-input').focus(), 100);
+}
+
+async function confirmLate(id, name, cls){
+  var timeVal = document.getElementById('late-time-input').value; // HH:MM
+  if(!timeVal){ toast('กรุณาเลือกเวลา', true); return; }
+
+  document.getElementById('late-modal').remove();
+  load('บันทึกสาย...');
+  try{
+    var date = document.getElementById('sel-date').value;
+    var ts   = date + ' ' + timeVal + ':00';
+    var existing = DATA.attendance.find(a => a.id==id && a.date==date);
+    if(existing){
+      await apiCall({action:'update', sheet:'Attendance',
+        range:`A${existing.rowNum}:F${existing.rowNum}`,
+        values:[ts, date, id, name, cls, 'สาย']});
+      toast('อัพเดตสาย: '+name+' เวลา '+timeVal);
+    } else {
+      await apiCall({action:'append', sheet:'Attendance',
+        values:[ts, date, id, name, cls, 'สาย']});
+      toast('บันทึกสาย: '+name+' เวลา '+timeVal);
+    }
+    await loadData();
+  }catch(e){ toast('Error: '+e.message, true); }
+  load('');
+}
 </script>
 </body>
 </html>
