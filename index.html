@@ -7,6 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap');
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     body{font-family:'Sarabun',sans-serif;background:#f1f5f9;color:#0f172a}
     .btn{padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-family:'Sarabun';font-size:1rem;font-weight:600;transition:.2s}
@@ -186,7 +187,10 @@
     }
     .login-box h3 { color:#2563eb;margin-bottom:4px;font-size:1.3rem; }
     .login-box p { color:#64748b;margin-bottom:20px;font-size:.9rem; }
+
+    
   </style>
+  
 </head>
 
 <body>
@@ -277,6 +281,7 @@
       <canvas id="c-scan"></canvas>
     </div>
     <div class="card" style="margin-top:14px;text-align:center">
+      <img id="ai-photo" src="" style="display:none;width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #2563eb;margin:0 auto 10px">
       <h3 id="ai-name" style="color:#2563eb;font-size:1.4rem;margin-bottom:6px">...</h3>
       <p id="ai-status" style="color:#64748b;margin-bottom:12px">เล็งกล้องไปที่ใบหน้า</p>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
@@ -337,7 +342,8 @@
           <div class="cam-wrap" style="margin-bottom:10px">
             <video id="v-reg" autoplay playsinline muted></video>
           </div>
-          <button class="btn btn-p" style="width:100%" onclick="doReg()">📸 บันทึกใบหน้า</button>
+          <button class="btn btn-p" style="width:100%;margin-bottom:8px" onclick="doReg()">📸 บันทึกใบหน้า (AI)</button>
+<button class="btn" style="width:100%;background:#0891b2;color:white" onclick="doSnapPhoto()">📷 ถ่ายรูปโปรไฟล์ → Drive</button>
           <p id="reg-status" style="margin-top:10px;font-size:.9rem;color:#64748b;min-height:24px;text-align:center"></p>
         </div>
       </div>
@@ -356,7 +362,7 @@
   <div class="card">
     <h3 style="margin-bottom:14px">📅 ปฏิทินวันหยุด / วันเปิดเรียนพิเศษ</h3>
 
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px">
+    <div id="hd-form" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px">
       <div>
         <label style="font-size:.85rem;font-weight:600;color:#475569;display:block;margin-bottom:4px">วันที่</label>
         <input type="date" id="hd-date" style="width:auto">
@@ -690,6 +696,44 @@
 var CFG={}, DATA={students:[],attendance:[]}, MATCHER=null;
 var stream=null, aiInterval=null, currentFace=null;
 const MODEL_URL = 'https://cdn.jsdelivr.net/gh/cgarciagl/face-api.js@0.22.2/weights';
+var autoCheckTimer = null;
+var autoCheckTarget = null;
+
+function startAutoCheck(id, name, cls){
+  // ถ้าเช็คชื่อวันนี้ไปแล้ว — ไม่ต้องนับ
+  var date = document.getElementById('sel-date').value;
+  var already = DATA.attendance.find(a => a.id == id && a.date == date);
+  if(already){
+    document.getElementById('ai-status').innerText = '✅ เช็คชื่อแล้ว: ' + already.status;
+    clearAutoCheck();
+    return;
+  }
+  if(autoCheckTarget && autoCheckTarget.id === id) return;
+  clearAutoCheck();
+  autoCheckTarget = {id, name, cls};
+  var count = 3;
+  var statusEl = document.getElementById('ai-status');
+  function tick(){
+    if(!autoCheckTarget || autoCheckTarget.id !== id){
+      clearAutoCheck(); return;
+    }
+    if(count > 0){
+      statusEl.innerText = '⏳ บันทึกอัตโนมัติใน ' + count + ' วินาที... (กดปุ่มเพื่อเลือกสถานะ)';
+      count--;
+      autoCheckTimer = setTimeout(tick, 1000);
+    } else {
+      statusEl.innerText = '✅ กำลังบันทึก มาเรียน...';
+      autoCheckTarget = null;
+      doCheck('มาเรียน');
+    }
+  }
+  autoCheckTimer = setTimeout(tick, 1000);
+}
+
+function clearAutoCheck(){
+  if(autoCheckTimer){ clearTimeout(autoCheckTimer); autoCheckTimer = null; }
+  autoCheckTarget = null;
+}
 
 // ─── color presets ───
 var COLOR_PRESETS = [
@@ -765,7 +809,7 @@ async function loadData(){
   try{
     var r1=await apiCall({action:'get',sheet:'Students'});
     var rows=(r1.values||[]).slice(1);
-    DATA.students=rows.map((r,i)=>({id:String(r[0]||''),name:String(r[1]||''),cls:String(r[2]||''),desc:String(r[3]||''),rowNum:i+2}));
+    DATA.students=rows.map((r,i)=>({id:String(r[0]||''),name:String(r[1]||''),cls:String(r[2]||''),desc:String(r[3]||''),photo:String(r[4]||''),rowNum:i+2}));
  var r2=await apiCall({action:'get',sheet:'Attendance'});
 var arows=(r2.values||[]).slice(1);
 DATA.attendance=arows.map((r,i)=>{
@@ -1047,12 +1091,23 @@ async function addStudent(){
 }
 
 function renderStudents(){
-  var html='<tr><th>รหัส</th><th>ชื่อ</th><th>ห้อง</th><th>ใบหน้า</th></tr>';
-  DATA.students.forEach(s=>{
-    html+=`<tr><td>${s.id}</td><td>${s.name}</td><td>${s.cls}</td>
-      <td>${s.desc?'<span class="badge ok">✅ มีแล้ว</span>':'<span class="badge abs">ยังไม่มี</span>'}</td></tr>`;
-  });
-  document.getElementById('tb-students').innerHTML=html;
+  var tb = document.getElementById('tb-students');
+  if(!tb) return;  // ← เพิ่มบรรทัดนี้
+  
+  var html='<tr><th>รหัส</th><th>ชื่อ</th><th>ห้อง</th><th>ใบหน้า</th><th></th></tr>';
+  if(!DATA.students.length){
+    html += '<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:20px">ยังไม่มีข้อมูลนักเรียน</td></tr>';
+  } else {
+    DATA.students.forEach(s=>{
+      if(!s.id) return; // ← ข้ามแถวว่าง (ที่เพิ่งลบ)
+      html+=`<tr>
+        <td>${s.id}</td><td>${s.name}</td><td>${s.cls}</td>
+        <td>${s.desc?'<span class="badge ok">✅ มีแล้ว</span>':'<span class="badge abs">ยังไม่มี</span>'}</td>
+        <td><button class="btn btn-r" style="padding:3px 10px;font-size:.8rem" onclick="deleteStudent('${s.id}','${s.name}',${s.rowNum})">🗑️ ลบ</button></td>
+      </tr>`;
+    });
+  }
+  tb.innerHTML = html;
 }
 
 function buildMatcher(){
@@ -1078,6 +1133,7 @@ function startCam(videoId,withAI){
 function stopCam(){
   if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
   if(aiInterval){ clearInterval(aiInterval); aiInterval=null; }
+  clearAutoCheck(); // ← เพิ่ม
 }
 
 function runAI(video){
@@ -1097,17 +1153,35 @@ function runAI(video){
           var flip=new faceapi.Box({x:size.width-box.x-box.width,y:box.y,width:box.width,height:box.height});
           if(m.label!='unknown'){
             var parts=m.label.split('#');
-            currentFace={id:parts[0],name:parts[1],cls:parts[2]};
+           currentFace={id:parts[0],name:parts[1],cls:parts[2]};
             document.getElementById('ai-name').innerText=parts[1];
-            document.getElementById('ai-status').innerText='พบใบหน้า — กดปุ่มเพื่อเช็คชื่อ';
+            var stu = DATA.students.find(s=>s.id===parts[0]);
+            var photoEl = document.getElementById('ai-photo');
+            if(stu && stu.photo){
+              photoEl.src = stu.photo;
+              photoEl.style.display = 'block';
+            } else {
+              photoEl.style.display = 'none';
+            }
+            startAutoCheck(parts[0], parts[1], parts[2]);
+            // แสดงรูปโปรไฟล์
+            var stu = DATA.students.find(s=>s.id===parts[0]);
+            var photoEl = document.getElementById('ai-photo');
+            if(photoEl && stu && stu.photo){
+              photoEl.src = stu.photo;
+              photoEl.style.display = 'block';
+            }
+            startAutoCheck(parts[0], parts[1], parts[2]);
             new faceapi.draw.DrawBox(flip,{label:parts[1],boxColor:'#2563eb'}).draw(cvs);
-          } else {
+         } else {
+            clearAutoCheck();
             document.getElementById('ai-name').innerText='?';
             document.getElementById('ai-status').innerText='ไม่รู้จักใบหน้า กรุณาลงทะเบียนก่อน';
             new faceapi.draw.DrawBox(flip,{label:'?',boxColor:'#ef4444'}).draw(cvs);
           }
         });
       } else if(rez.length==0){
+        clearAutoCheck();
         document.getElementById('ai-name').innerText='...';
         document.getElementById('ai-status').innerText='เล็งกล้องไปที่ใบหน้า';
       }
@@ -1150,10 +1224,51 @@ async function doReg(){
   if(!det){ status.innerText='❌ ไม่พบใบหน้า — ลองใหม่อีกครั้ง'; toast('ไม่พบใบหน้าในกล้อง',true); return; }
   status.innerText='✅ พบใบหน้า กำลังบันทึก...';
   load('บันทึกใบหน้า...');
+
+  // ประกาศไว้นอก try
+  var desc = '';
+  var photoB64 = '';
+  var photoUrl = '';
+  var row = s.rowNum;
+
   try{
-    var desc = JSON.stringify(Array.from(det.descriptor));
-    var row  = s.rowNum;
-    await apiCall({action:'update',sheet:'Students',range:'D'+row+':D'+row,values:[desc]});
+    desc = JSON.stringify(Array.from(det.descriptor));
+
+    // capture รูปจาก video
+    var snapCanvas = document.createElement('canvas');
+    snapCanvas.width = 200; snapCanvas.height = 200;
+    var snapCtx = snapCanvas.getContext('2d');
+    snapCtx.translate(200, 0); snapCtx.scale(-1, 1);
+    snapCtx.drawImage(video, 0, 0, 200, 200);
+    photoB64 = snapCanvas.toDataURL('image/jpeg', 0.7);
+
+  // อัพโหลดรูปขึ้น Drive
+    status.innerText = '📤 กำลังอัพโหลดรูป...';
+    try {
+      var upRes = await fetch(CFG.url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({action:'uploadPhoto', photo:photoB64, studentId:s.id}),
+        redirect: 'follow'
+      }).then(r=>{
+        console.log('status:', r.status, 'url:', r.url);
+        return r.text();
+      }).then(t=>{
+        console.log('raw response:', t.substring(0,200));
+        return JSON.parse(t);
+      });
+      photoUrl = upRes.url || '';
+      console.log('photoUrl:', photoUrl);
+    } catch(fe) { 
+      console.log('upload error:', fe.message);
+      photoUrl = ''; 
+    }
+
+    console.log('photoUrl:', photoUrl);
+    console.log('desc length:', desc.length);
+
+    // บันทึก descriptor + photo url
+    await apiCall({action:'update',sheet:'Students',range:'D'+row+':E'+row,values:[desc, photoUrl]});
     await loadData();
     status.innerText='✅ บันทึกใบหน้า '+s.name+' เรียบร้อย!';
     toast('ลงทะเบียนใบหน้า '+s.name+' เรียบร้อย');
@@ -1714,9 +1829,17 @@ function openPrintReport(type){
       var d = a.date.length>10 ? a.date.substring(0,10) : a.date;
       return d.startsWith(month) && (!cls||a.cls===cls);
     });
-    var days = getSchoolDays([...new Set(attFiltered.map(a=>
-      a.date.length>10 ? a.date.substring(0,10) : a.date
-    ))].sort());
+   // สร้างวันทุกวันในเดือน แล้วกรองเฉพาะวันเรียน (เหมือน renderMonthReport)
+    var year  = parseInt(month.split('-')[0]);
+    var mon   = parseInt(month.split('-')[1]);
+    var daysInMonth = new Date(year, mon, 0).getDate();
+    var allDays = [];
+    for(var i = 1; i <= daysInMonth; i++){
+      var dd = String(i).padStart(2,'0');
+      var mm = String(mon).padStart(2,'0');
+      allDays.push(year+'-'+mm+'-'+dd);
+    }
+    var days = getSchoolDays(allDays);
     var map = {};
     attFiltered.forEach(a=>{
       var d = a.date.length>10 ? a.date.substring(0,10) : a.date;
@@ -2419,10 +2542,14 @@ async function loadHolidays(){
       return true;
     });
   } catch(e) { HOLIDAYS = []; }
+  var isAdmin = CURRENT_USER && CURRENT_USER.role === 'admin';
+  var formEl = document.getElementById('hd-form');
+  if(formEl) formEl.style.display = isAdmin ? 'flex' : 'none';
   renderHolidays();
 }
 
 function renderHolidays(){
+  var isAdmin = CURRENT_USER && CURRENT_USER.role === 'admin';  // ← เพิ่มบรรทัดนี้
   var html = '<tr><th>วันที่</th><th>ประเภท</th><th>รายละเอียด</th><th></th></tr>';
   if(!HOLIDAYS.length){
     html += '<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:16px">ยังไม่มีข้อมูล</td></tr>';
@@ -2434,11 +2561,56 @@ function renderHolidays(){
         <td><span class="badge" style="background:${isHoliday?'#fee2e2':'#dcfce7'};color:${isHoliday?'#b91c1c':'#15803d'}">
           ${isHoliday?'🔴 วันหยุด':'🟢 เปิดพิเศษ'}</span></td>
         <td>${h.desc}</td>
-        <td><button class="btn btn-r" style="padding:3px 10px;font-size:.8rem" onclick="deleteHoliday(${h.rowNum})">🗑️</button></td>
+        <td>${isAdmin ? `<button class="btn" style="padding:3px 8px;font-size:.8rem;background:#f59e0b;color:white;margin-right:4px" onclick="editHoliday(${h.rowNum})">✏️</button><button class="btn btn-r" style="padding:3px 8px;font-size:.8rem" onclick="deleteHoliday(${h.rowNum})">🗑️</button>` : ''}</td>
       </tr>`;
     });
   }
   document.getElementById('tb-holidays').innerHTML = html;
+}
+
+function editHoliday(rowNum){
+  var h = HOLIDAYS.find(x=>x.rowNum===rowNum);
+  if(!h) return;
+  var existing = document.getElementById('edit-holiday-modal');
+  if(existing) existing.remove();
+  var modal = document.createElement('div');
+  modal.id = 'edit-holiday-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:white;border-radius:16px;padding:28px;max-width:380px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+      <h3 style="color:#f59e0b;margin-bottom:16px">✏️ แก้ไขวันหยุด</h3>
+      <label style="font-size:.85rem;font-weight:600;color:#475569;display:block;margin-bottom:4px">วันที่</label>
+      <input type="date" id="ehd-date" value="${h.date}" style="width:100%;margin-bottom:12px">
+      <label style="font-size:.85rem;font-weight:600;color:#475569;display:block;margin-bottom:4px">ประเภท</label>
+      <select id="ehd-type" style="width:100%;margin-bottom:12px">
+        <option value="holiday" ${h.type==='holiday'?'selected':''}>🔴 วันหยุด</option>
+        <option value="special" ${h.type==='special'?'selected':''}>🟢 เปิดเรียนพิเศษ</option>
+      </select>
+      <label style="font-size:.85rem;font-weight:600;color:#475569;display:block;margin-bottom:4px">รายละเอียด</label>
+      <input id="ehd-desc" value="${h.desc}" style="width:100%;margin-bottom:20px">
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-p" style="flex:1" onclick="confirmEditHoliday(${rowNum})">💾 บันทึก</button>
+        <button class="btn" style="background:#f1f5f9;color:#64748b" onclick="document.getElementById('edit-holiday-modal').remove()">ยกเลิก</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function confirmEditHoliday(rowNum){
+  var date = document.getElementById('ehd-date').value;
+  var type = document.getElementById('ehd-type').value;
+  var desc = document.getElementById('ehd-desc').value.trim();
+  if(!date){ toast('เลือกวันที่ก่อน', true); return; }
+  document.getElementById('edit-holiday-modal').remove();
+  load('บันทึก...');
+  try{
+    await apiCall({action:'update', sheet:'Holidays', range:`A${rowNum}:C${rowNum}`, values:[date, type, desc]});
+    var h = HOLIDAYS.find(x=>x.rowNum===rowNum);
+    if(h){ h.date=date; h.type=type; h.desc=desc; }
+    renderHolidays();
+    toast('แก้ไขเรียบร้อย');
+  }catch(e){ toast('Error: '+e.message, true); }
+  load('');
 }
 
 async function addHoliday(){
@@ -2512,6 +2684,76 @@ function initReportPage(){
   var ms = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
   document.getElementById('rp-date').value      = ds;
   document.getElementById('rp-month-sel').value = ms;
+}
+
+async function deleteStudent(id, name, rowNum){
+  if(!confirm('ลบ "'+name+'" ออกจากระบบ?\n(ข้อมูลการเช็คชื่อจะยังคงอยู่)')) return;
+  load('กำลังลบ...');
+  try{
+    await apiCall({action:'update', sheet:'Students',
+      range:'A'+rowNum+':E'+rowNum,
+      values:['','','','','']});
+    DATA.students = DATA.students.filter(s => s.id !== String(id));
+    renderStudents();
+    renderDash();
+    toast('ลบ '+name+' เรียบร้อย');
+  }catch(e){ toast('Error: '+e.message, true); }
+  load('');
+}
+
+async function doSnapPhoto(){
+  var val = document.getElementById('reg-sel').value;
+  if(!val){ toast('เลือกชื่อก่อน', true); return; }
+  var s = JSON.parse(val);
+  var video = document.getElementById('v-reg');
+  var status = document.getElementById('reg-status');
+  if(!video.srcObject || video.readyState < 2){ toast('กล้องยังไม่พร้อม', true); return; }
+
+  var snap = document.createElement('canvas');
+  snap.width = 200; snap.height = 200;
+  var ctx = snap.getContext('2d');
+  ctx.translate(200, 0); ctx.scale(-1, 1);
+  ctx.drawImage(video, 0, 0, 200, 200);
+  // เอาแค่ base64 ไม่มี prefix
+  var photoB64 = snap.toDataURL('image/jpeg', 0.6).split(',')[1];
+
+  status.innerText = '📤 กำลังอัพโหลดรูป...';
+  load('อัพโหลดรูป...');
+  try {
+    // อัพโหลดไปที่ ImgBB (ฟรี ไม่ต้อง login)
+    var form = new FormData();
+    form.append('image', photoB64);
+    form.append('key', '4e56a9792222bc950652899b5796df38'); // ← สมัครฟรีที่ imgbb.com
+
+    var r = await fetch('https://api.imgbb.com/1/upload', {
+      method: 'POST',
+      body: form
+    });
+    var j = await r.json();
+
+    if(!j.success){ 
+      status.innerText = '❌ อัพโหลดไม่สำเร็จ'; 
+      toast('อัพโหลดไม่สำเร็จ', true); 
+      load(''); return; 
+    }
+
+    var photoUrl = j.data.display_url;
+
+    // บันทึก URL ลง Sheet column E
+    await apiCall({action:'update', sheet:'Students',
+      range:'E'+s.rowNum+':E'+s.rowNum, values:[photoUrl]});
+
+    var stu = DATA.students.find(x => x.id === s.id);
+    if(stu) stu.photo = photoUrl;
+
+    // แสดง preview
+    status.innerHTML = '✅ อัพโหลดรูป '+s.name+' เรียบร้อย!<br><img src="'+photoUrl+'" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-top:8px;border:3px solid #22c55e">';
+    toast('บันทึกรูป '+s.name+' เรียบร้อย');
+  } catch(e){
+    status.innerText = '❌ Error: ' + e.message;
+    toast('Error: ' + e.message, true);
+  }
+  load('');
 }
 </script>
 </body>
