@@ -350,7 +350,34 @@
       <button class="btn" id="rt-day"   onclick="switchReport('day')"   style="background:#2563eb;color:white">รายวัน</button>
       <button class="btn" id="rt-month" onclick="switchReport('month')" style="background:#f1f5f9;color:#64748b">รายเดือน</button>
       <button class="btn" id="rt-term"  onclick="switchReport('term')"  style="background:#f1f5f9;color:#64748b">รายเทอม</button>
+      <button class="btn" id="rt-holidays" onclick="switchReport('holidays')" style="background:#f1f5f9;color:#64748b">📅 วันหยุด</button>
     </div>
+    <div id="rp-holidays" style="display:none">
+  <div class="card">
+    <h3 style="margin-bottom:14px">📅 ปฏิทินวันหยุด / วันเปิดเรียนพิเศษ</h3>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px">
+      <div>
+        <label style="font-size:.85rem;font-weight:600;color:#475569;display:block;margin-bottom:4px">วันที่</label>
+        <input type="date" id="hd-date" style="width:auto">
+      </div>
+      <div>
+        <label style="font-size:.85rem;font-weight:600;color:#475569;display:block;margin-bottom:4px">ประเภท</label>
+        <select id="hd-type" style="width:auto">
+          <option value="holiday">🔴 วันหยุด</option>
+          <option value="special">🟢 เปิดเรียนพิเศษ</option>
+        </select>
+      </div>
+      <div style="flex:1;min-width:180px">
+        <label style="font-size:.85rem;font-weight:600;color:#475569;display:block;margin-bottom:4px">รายละเอียด</label>
+        <input id="hd-desc" placeholder="เช่น วันวิสาขบูชา / เรียนชดเชย">
+      </div>
+      <button class="btn btn-p" onclick="addHoliday()">➕ เพิ่ม</button>
+    </div>
+
+    <div style="overflow-x:auto"><table id="tb-holidays"></table></div>
+  </div>
+</div>
     <div id="rp-day">
       <div class="card">
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -846,7 +873,11 @@ function editCheck(id, name, cls) {
   if (existing) existing.remove();
 
   var date = document.getElementById('sel-date').value;
-  var rec  = DATA.attendance.find(a => a.id==id && a.date==date);
+  // ✅ แปลง date ก่อนเปรียบเทียบ
+  var rec = DATA.attendance.find(a => {
+    var d = a.date.length > 10 ? a.date.substring(0,10) : a.date;
+    return a.id == id && d == date;
+  });
   var curStatus = rec ? rec.status : '';
 
   var modal = document.createElement('div');
@@ -929,14 +960,17 @@ async function confirmEdit(id, name, cls) {
   if (!_editStatus) { toast('เลือกสถานะก่อน', true); return; }
 
   var status = _editStatus;
+ var customTs = null; // ✅ เวลา custom สำหรับสาย
 
-  // ถ้าสาย — เอาเวลามาต่อ
-  if (status === 'สาย') {
+  // ถ้าสาย — เอาเวลามาใช้เป็น ts
+  if (_editStatus === 'สาย') {
     var t = document.getElementById('edit-time-val').value;
-    if (t) status = 'สาย'; // เวลาจะถูก save ใน ts
+    if (t) {
+      var date = document.getElementById('sel-date').value;
+      customTs = date + ' ' + t + ':00';
+    }
   }
-
-  // ถ้าลา — เอาสาเหตุมาต่อ
+  // ถ้าลา — เอาสาเหตุมาต่อใน status
   if (_editStatus === 'ลา') {
     var reason = document.getElementById('edit-reason-val').value.trim();
     if (reason) status = 'ลา ('+reason+')';
@@ -945,32 +979,33 @@ async function confirmEdit(id, name, cls) {
   document.getElementById('edit-modal').remove();
   load('บันทึก...');
   try {
-    await saveCheckIn(id, name, cls, status);
+    await saveCheckIn(id, name, cls, status, customTs);
   } catch(e) { toast('Error: '+e.message, true); }
   load('');
 }
+
 async function quickCheck(id,name,cls,status){
   load('บันทึก...'); try{ await saveCheckIn(id,name,cls,status); await loadData(); }catch(e){ toast('Error: '+e.message,true); } load('');
 }
 
-// แทนที่ฟังก์ชัน saveCheckIn เดิม
-async function saveCheckIn(id, name, cls, status) {
+async function saveCheckIn(id, name, cls, status, customTs) {
   var date = document.getElementById('sel-date').value;
   var now  = new Date();
-  var ts   = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+
-             String(now.getDate()).padStart(2,'0')+' '+
-             String(now.getHours()).padStart(2,'0')+':'+
-             String(now.getMinutes()).padStart(2,'0')+':'+
-             String(now.getSeconds()).padStart(2,'0');
+  // ✅ ถ้ามี customTs ใช้เลย
+  var ts = customTs || (
+    now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+
+    String(now.getDate()).padStart(2,'0')+' '+
+    String(now.getHours()).padStart(2,'0')+':'+
+    String(now.getMinutes()).padStart(2,'0')+':'+
+    String(now.getSeconds()).padStart(2,'0')
+  );
 
-  // ✅ แปลง date ก่อนเปรียบเทียบ (รองรับ ISO format)
   var existing = DATA.attendance.find(a => {
     var d = a.date.length > 10 ? a.date.substring(0,10) : a.date;
     return a.id == id && d == date;
   });
 
   if (existing) {
-    // ✅ ถ้ามีแล้ว อัพเดตได้เฉพาะ สาย/ป่วย/ลา/ขาด — ถ้า "มาเรียน" อยู่แล้วไม่ให้ทับ
     if (existing.status === 'มาเรียน' && status === 'มาเรียน') {
       toast('บันทึกแล้ว: '+name+' มาเรียนวันนี้', false);
       return;
@@ -979,13 +1014,14 @@ async function saveCheckIn(id, name, cls, status) {
       range:`A${existing.rowNum}:F${existing.rowNum}`,
       values:[ts, date, id, name, cls, status]});
     existing.ts     = ts;
+    existing.date   = date;
     existing.status = status;
     toast('อัพเดต: '+name+' → '+status);
   } else {
     await apiCall({action:'append', sheet:'Attendance',
       values:[ts, date, id, name, cls, status]});
-    DATA.attendance.push({ ts, date, id, name, cls, status,
-      rowNum: DATA.attendance.length + 2 });
+    var newRowNum = DATA.attendance.length + 2;
+    DATA.attendance.push({ ts, date, id, name, cls, status, rowNum: newRowNum });
     toast('บันทึก: '+name+' → '+status);
   }
 
@@ -1257,12 +1293,12 @@ async function loadTeachers(){
     var rows = (r.values||[]).slice(1);
     TEACHERS = {};
     rows.forEach(row => {
-      if(!row[0]) return;
-      var cls = String(row[0]).trim();
-      // ✅ กรองเฉพาะ ISO date ออก (มี T และยาวกว่า 10)
+      var cls = String(row[0]||'').trim();
+      var name = String(row[1]||'').trim();
+      if(!cls || !name) return;
       if(cls.includes('T') && cls.length > 10) return;
-      if(!cls) return;
-      TEACHERS[cls] = String(row[1]||'');
+      // ✅ ถ้ามีแล้วไม่ทับ
+      if(!TEACHERS[cls]) TEACHERS[cls] = name;
     });
   } catch(e) {
     var t = localStorage.getItem('ss_teachers');
@@ -1449,13 +1485,17 @@ function renderReport(){
   if(!date) return;
   var students = DATA.students.filter(s => !cls || s.cls === cls);
   var map = {};
-  DATA.attendance.filter(a => a.date===date && (!cls||a.cls===cls)).forEach(a => map[a.id]=a);
+  DATA.attendance.filter(a => {
+    var d = a.date.length > 10 ? a.date.substring(0,10) : a.date;
+    return d === date && (!cls || a.cls === cls);
+  }).forEach(a => map[a.id] = a);
   var p=0,l=0,ab=0,sick=0;
   var html = '<tr><th>#</th><th>รหัส</th><th>ชื่อ</th><th>ห้อง</th><th>เวลา</th><th>สถานะ</th></tr>';
   students.forEach((s,i) => {
-    var rec = map[s.id];
+    var rec    = map[s.id];
     var status = rec ? rec.status : 'ขาด';
-    var time   = rec ? (rec.ts.length>=16 ? rec.ts.substring(11,16) : '-') : '-';
+    // ✅ ใช้ parseTime
+    var time   = rec ? parseTime(rec.ts) : '-';
     var color  = status==='มาเรียน'?'#dcfce7':status==='สาย'?'#fef3c7':status==='ป่วย'?'#e0f2fe':'#fee2e2';
     var tc     = status==='มาเรียน'?'#15803d':status==='สาย'?'#b45309':status==='ป่วย'?'#0369a1':'#b91c1c';
     if(status==='มาเรียน') p++;
@@ -1482,10 +1522,36 @@ function renderMonthReport(){
   var cls   = document.getElementById('rp-cls-month').value;
   if(!month){ document.getElementById('rp-month-out').innerHTML='<p style="color:#94a3b8">เลือกเดือนก่อน</p>'; return; }
   var students = DATA.students.filter(s => !cls || s.cls===cls);
-  var days = [...new Set(DATA.attendance.filter(a=>a.date.startsWith(month)&&(!cls||a.cls===cls)).map(a=>a.date))].sort();
-  if(!days.length){ document.getElementById('rp-month-out').innerHTML='<p style="color:#94a3b8">ไม่มีข้อมูลในเดือนนี้</p>'; return; }
+
+  // ✅ สร้างวันทุกวันในเดือน ไม่ใช่แค่วันที่มีข้อมูล
+  var year  = parseInt(month.split('-')[0]);
+  var mon   = parseInt(month.split('-')[1]);
+  var daysInMonth = new Date(year, mon, 0).getDate();
+  var allDays = [];
+  for(var i = 1; i <= daysInMonth; i++){
+    var dd = String(i).padStart(2,'0');
+    var mm = String(mon).padStart(2,'0');
+    allDays.push(year+'-'+mm+'-'+dd);
+  }
+  // ✅ กรองเฉพาะวันเรียน (จันทร์-ศุกร์ + ไม่ใช่วันหยุด)
+  var days = getSchoolDays(allDays);
+
+  if(!days.length){ document.getElementById('rp-month-out').innerHTML='<p style="color:#94a3b8">ไม่มีวันเรียนในเดือนนี้</p>'; return; }
+
+  var attFiltered = DATA.attendance.filter(a => {
+    var d = a.date.length > 10 ? a.date.substring(0,10) : a.date;
+    return d.startsWith(month) && (!cls || a.cls===cls);
+  });
+
   var map = {};
-  DATA.attendance.forEach(a=>{ if(a.date.startsWith(month)&&(!cls||a.cls===cls)){ if(!map[a.id]) map[a.id]={}; map[a.id][a.date]=a.status; } });
+  attFiltered.forEach(a=>{
+    var d = a.date.length > 10 ? a.date.substring(0,10) : a.date;
+    if(!map[a.id]) map[a.id]={};
+    map[a.id][d] = a.status;
+  });
+
+  // ... โค้ดที่เหลือเหมือนเดิม
+
   var html = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.82rem">
     <tr>
       <th style="padding:6px 8px;background:#f8fafc;position:sticky;left:0;z-index:1">ชื่อ</th>
@@ -1523,14 +1589,29 @@ function renderTermReport(){
   var end   = document.getElementById('term-end').value;
   var cls   = document.getElementById('rp-cls-term').value;
   if(!start||!end){ document.getElementById('rp-term-out').innerHTML='<p style="color:#94a3b8">กำหนดช่วงเทอมก่อน</p>'; return; }
+  
   var students = DATA.students.filter(s => !cls || s.cls===cls);
+  
+  // ✅ แปลง date ก่อน filter
   var filtered = DATA.attendance.filter(a=>{
+    var d = a.date.length > 10 ? a.date.substring(0,10) : a.date;
     if(cls && a.cls!==cls) return false;
-    return a.date >= start && a.date <= end;
+    return d >= start && d <= end;
   });
-  var days = [...new Set(filtered.map(a=>a.date))].sort();
+
+  // ✅ แปลง date และกรองเสาร์-อาทิตย์/วันหยุด
+  var days = getSchoolDays([...new Set(filtered.map(a=>{
+    return a.date.length > 10 ? a.date.substring(0,10) : a.date;
+  }))].sort());
+
+  // ✅ map เดียว แปลง date ถูกต้อง
   var map = {};
-  filtered.forEach(a=>{ if(!map[a.id]) map[a.id]={}; map[a.id][a.date]=a.status; });
+  filtered.forEach(a=>{
+    var d = a.date.length > 10 ? a.date.substring(0,10) : a.date;
+    if(!map[a.id]) map[a.id]={};
+    map[a.id][d] = a.status;
+  });
+
   var html = `<h4 style="margin-bottom:12px;color:#475569">ช่วง ${start} ถึง ${end} (${days.length} วันเรียน)</h4>
   <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.88rem">
     <tr style="background:#f8fafc">
@@ -1569,25 +1650,25 @@ function renderTermReport(){
 
 // ===== PRINT REPORT =====
 function openPrintReport(type){
-  var cls = '';
-  var teacher = '';
-  var title = '';
-  var subtitle = '';
+  var cls = '', teacher = '', title = '', subtitle = '';
 
   if(type === 'day'){
     var date = document.getElementById('rp-date').value;
-    cls      = document.getElementById('rp-cls').value;
-    teacher  = TEACHERS[cls] || (cls ? '(ยังไม่ระบุครู)' : '');
-    title    = 'รายงานการเข้าเรียนประจำวัน' + (cls?' ห้อง '+cls:'');
-    subtitle = 'วันที่ ' + date;
+    cls     = document.getElementById('rp-cls').value;
+    teacher = TEACHERS[cls] || (cls ? '(ยังไม่ระบุครู)' : '');
+    title   = 'รายงานการเข้าเรียนประจำวัน' + (cls?' ห้อง '+cls:'');
+    subtitle= 'วันที่ ' + date;
     var students = DATA.students.filter(s => !cls || s.cls === cls);
     var map = {};
-    DATA.attendance.filter(a=>a.date===date&&(!cls||a.cls===cls)).forEach(a=>map[a.id]=a);
+    DATA.attendance.filter(a=>{
+      var d = a.date.length>10 ? a.date.substring(0,10) : a.date;
+      return d===date && (!cls||a.cls===cls);
+    }).forEach(a=>map[a.id]=a);
     var p=0,l=0,ab=0,sick=0;
     var rows = students.map((s,i)=>{
       var rec    = map[s.id];
       var status = rec ? rec.status : 'ขาด';
-      var time   = rec ? (rec.ts.length>=16?rec.ts.substring(11,16):'-') : '-';
+      var time   = rec ? parseTime(rec.ts) : '-';
       if(status==='มาเรียน') p++;
       else if(status==='สาย') l++;
       else if(status==='ป่วย') sick++;
@@ -1617,20 +1698,32 @@ function openPrintReport(type){
         </tr></thead><tbody>${rows}</tbody>
       </table>`;
   }
+
   else if(type === 'month'){
     var month = document.getElementById('rp-month-sel').value;
-    cls       = document.getElementById('rp-cls-month').value;
-    teacher   = TEACHERS[cls] || (cls ? '(ยังไม่ระบุครู)' : '');
+    cls     = document.getElementById('rp-cls-month').value;
+    teacher = TEACHERS[cls] || (cls ? '(ยังไม่ระบุครู)' : '');
     var monthNames = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
     var mParts = month.split('-');
-    var mLabel = mParts.length===2 ? monthNames[parseInt(mParts[1])] + ' ' + mParts[0] : month;
-    title    = 'รายงานการเข้าเรียนประจำเดือน' + (cls?' ห้อง '+cls:'');
-    subtitle = mLabel;
+    var mLabel = mParts.length===2 ? monthNames[parseInt(mParts[1])]+' '+mParts[0] : month;
+    title   = 'รายงานการเข้าเรียนประจำเดือน' + (cls?' ห้อง '+cls:'');
+    subtitle= mLabel;
     var students = DATA.students.filter(s => !cls || s.cls===cls);
-    var days = [...new Set(DATA.attendance.filter(a=>a.date.startsWith(month)&&(!cls||a.cls===cls)).map(a=>a.date))].sort();
+    // ✅ แปลง date + กรองวันหยุด
+    var attFiltered = DATA.attendance.filter(a=>{
+      var d = a.date.length>10 ? a.date.substring(0,10) : a.date;
+      return d.startsWith(month) && (!cls||a.cls===cls);
+    });
+    var days = getSchoolDays([...new Set(attFiltered.map(a=>
+      a.date.length>10 ? a.date.substring(0,10) : a.date
+    ))].sort());
     var map = {};
-    DATA.attendance.forEach(a=>{ if(a.date.startsWith(month)&&(!cls||a.cls===cls)){ if(!map[a.id]) map[a.id]={}; map[a.id][a.date]=a.status; } });
-    var totalP=0, totalL=0, totalAb=0;
+    attFiltered.forEach(a=>{
+      var d = a.date.length>10 ? a.date.substring(0,10) : a.date;
+      if(!map[a.id]) map[a.id]={};
+      map[a.id][d] = a.status;
+    });
+    var totalP=0,totalL=0,totalAb=0;
     students.forEach(s=>{ days.forEach(d=>{ var st=(map[s.id]||{})[d]; if(!st||st==='ขาด'||st==='ลา') totalAb++; else if(st==='มาเรียน') totalP++; else if(st==='สาย') totalL++; }); });
     document.getElementById('pr-stats').innerHTML = `
       <div style="background:#f0fdf4;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#15803d;margin:0">วันเรียน</p><h2 style="color:#15803d;margin:4px 0 0">${days.length}</h2></div>
@@ -1639,52 +1732,111 @@ function openPrintReport(type){
       <div style="background:#fef2f2;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#b91c1c;margin:0">ขาด (ครั้ง)</p><h2 style="color:#b91c1c;margin:4px 0 0">${totalAb}</h2></div>`;
     var tableHtml = `<div style="overflow-x:auto;margin-bottom:16px"><table style="width:100%;border-collapse:collapse;font-size:.78rem">
       <thead><tr style="background:#1e40af;color:white">
-        <th style="padding:6px 8px">#</th><th style="padding:6px 8px;text-align:left">ชื่อ-นามสกุล</th>
+        <th style="padding:6px 8px">#</th>
+        <th style="padding:6px 8px;text-align:left">ชื่อ-นามสกุล</th>
         ${days.map(d=>`<th style="padding:4px 6px;text-align:center">${d.substring(8)}</th>`).join('')}
         <th style="padding:6px 8px;text-align:center;background:#166534">มา</th>
         <th style="padding:6px 8px;text-align:center;background:#991b1b">ขาด</th>
         <th style="padding:6px 8px;text-align:center;background:#1e3a5f">%</th>
       </tr></thead><tbody>`;
     students.forEach((s,i)=>{
-      var p=0, ab=0;
-      var cells = days.map(d=>{ var st=(map[s.id]||{})[d]; if(!st){ab++;return `<td style="padding:3px;text-align:center;background:#fee2e2;color:#b91c1c">ข</td>`;} if(st==='มาเรียน'){p++;return `<td style="padding:3px;text-align:center;background:#dcfce7;color:#15803d">✓</td>`;} if(st==='สาย'){p++;return `<td style="padding:3px;text-align:center;background:#fef3c7;color:#b45309">ส</td>`;} if(st==='ป่วย'){return `<td style="padding:3px;text-align:center;background:#e0f2fe;color:#0369a1">ป</td>`;} if(st==='ลา'){return `<td style="padding:3px;text-align:center;background:#f3e8ff;color:#7c3aed">ล</td>`;} ab++;return `<td style="padding:3px;text-align:center;background:#fee2e2;color:#b91c1c">ข</td>`; }).join('');
+      var p=0,ab=0;
+      var cells = days.map(d=>{
+        var st=(map[s.id]||{})[d];
+        if(!st){ab++;return `<td style="padding:3px;text-align:center;background:#fee2e2;color:#b91c1c">ข</td>`;}
+        if(st==='มาเรียน'){p++;return `<td style="padding:3px;text-align:center;background:#dcfce7;color:#15803d">✓</td>`;}
+        if(st==='สาย'){p++;return `<td style="padding:3px;text-align:center;background:#fef3c7;color:#b45309">ส</td>`;}
+        if(st==='ป่วย'){return `<td style="padding:3px;text-align:center;background:#e0f2fe;color:#0369a1">ป</td>`;}
+        if(st==='ลา'){return `<td style="padding:3px;text-align:center;background:#f3e8ff;color:#7c3aed">ล</td>`;}
+        ab++;return `<td style="padding:3px;text-align:center;background:#fee2e2;color:#b91c1c">ข</td>`;
+      }).join('');
       var pct=days.length?Math.round(p/days.length*100):0;
       var pc=pct>=80?'#15803d':pct>=60?'#b45309':'#b91c1c';
       var bg=pct>=80?'#dcfce7':pct>=60?'#fef3c7':'#fee2e2';
-      tableHtml+=`<tr style="border-top:1px solid #f1f5f9"><td style="padding:5px 8px;color:#94a3b8;font-size:.75rem">${i+1}</td><td style="padding:5px 8px;white-space:nowrap">${s.name}</td>${cells}<td style="padding:5px 8px;text-align:center;font-weight:700;color:#15803d">${p}</td><td style="padding:5px 8px;text-align:center;font-weight:700;color:#ef4444">${ab}</td><td style="padding:5px 8px;text-align:center"><span style="padding:2px 8px;border-radius:12px;font-weight:700;font-size:.75rem;background:${bg};color:${pc}">${pct}%</span></td></tr>`;
+      tableHtml+=`<tr style="border-top:1px solid #f1f5f9">
+        <td style="padding:5px 8px;color:#94a3b8;font-size:.75rem">${i+1}</td>
+        <td style="padding:5px 8px;white-space:nowrap">${s.name}</td>
+        ${cells}
+        <td style="padding:5px 8px;text-align:center;font-weight:700;color:#15803d">${p}</td>
+        <td style="padding:5px 8px;text-align:center;font-weight:700;color:#ef4444">${ab}</td>
+        <td style="padding:5px 8px;text-align:center"><span style="padding:2px 8px;border-radius:12px;font-weight:700;font-size:.75rem;background:${bg};color:${pc}">${pct}%</span></td>
+      </tr>`;
     });
     tableHtml += '</tbody></table></div>';
     document.getElementById('pr-body').innerHTML = tableHtml;
   }
+
   else if(type === 'term'){
     var start = document.getElementById('term-start').value;
     var end   = document.getElementById('term-end').value;
-    cls       = document.getElementById('rp-cls-term').value;
-    teacher   = TEACHERS[cls] || (cls ? '(ยังไม่ระบุครู)' : '');
-    title     = 'รายงานสรุปการเข้าเรียนประจำเทอม' + (cls?' ห้อง '+cls:'');
-    subtitle  = 'ช่วง ' + start + ' ถึง ' + end;
+    cls     = document.getElementById('rp-cls-term').value;
+    teacher = TEACHERS[cls] || (cls ? '(ยังไม่ระบุครู)' : '');
+    title   = 'รายงานสรุปการเข้าเรียนประจำเทอม' + (cls?' ห้อง '+cls:'');
+    subtitle= 'ช่วง ' + start + ' ถึง ' + end;
     if(!start||!end){ toast('กรุณากำหนดช่วงเทอมก่อน',true); return; }
     var students = DATA.students.filter(s => !cls || s.cls===cls);
-    var filtered = DATA.attendance.filter(a=>{ if(cls && a.cls!==cls) return false; return a.date >= start && a.date <= end; });
-    var days = [...new Set(filtered.map(a=>a.date))].sort();
+    // ✅ แปลง date + กรองวันหยุด
+    var filtered = DATA.attendance.filter(a=>{
+      var d = a.date.length>10 ? a.date.substring(0,10) : a.date;
+      if(cls && a.cls!==cls) return false;
+      return d >= start && d <= end;
+    });
+    var days = getSchoolDays([...new Set(filtered.map(a=>
+      a.date.length>10 ? a.date.substring(0,10) : a.date
+    ))].sort());
     var map = {};
-    filtered.forEach(a=>{ if(!map[a.id]) map[a.id]={}; map[a.id][a.date]=a.status; });
+    filtered.forEach(a=>{
+      var d = a.date.length>10 ? a.date.substring(0,10) : a.date;
+      if(!map[a.id]) map[a.id]={};
+      map[a.id][d]=a.status;
+    });
     var totalP=0,totalL=0,totalSick=0,totalAb=0;
     var tableRows='';
     students.forEach((s,i)=>{
       var p=0,l=0,sick=0,ab=0;
-      days.forEach(d=>{ var st=(map[s.id]||{})[d]||'ขาด'; if(st==='มาเรียน'){p++;totalP++;} else if(st==='สาย'){l++;totalL++;} else if(st==='ป่วย'){sick++;totalSick++;} else{ab++;totalAb++;} });
+      days.forEach(d=>{
+        var st=(map[s.id]||{})[d]||'ขาด';
+        if(st==='มาเรียน'){p++;totalP++;}
+        else if(st==='สาย'){l++;totalL++;}
+        else if(st==='ป่วย'){sick++;totalSick++;}
+        else{ab++;totalAb++;}
+      });
       var pct=days.length?Math.round((p+l)/days.length*100):0;
       var bg=pct>=80?'#dcfce7':pct>=60?'#fef3c7':'#fee2e2';
       var tc=pct>=80?'#15803d':pct>=60?'#b45309':'#b91c1c';
-      tableRows+=`<tr style="border-top:1px solid #f1f5f9"><td style="padding:7px 8px;color:#94a3b8;font-size:.8rem">${i+1}</td><td style="padding:7px 8px">${s.name}</td><td style="padding:7px 8px;text-align:center"><span style="padding:2px 8px;border-radius:12px;background:#eff6ff;color:#1d4ed8;font-size:.8rem">${s.cls}</span></td><td style="padding:7px 8px;text-align:center;font-weight:700;color:#15803d">${p}</td><td style="padding:7px 8px;text-align:center;font-weight:700;color:#b45309">${l}</td><td style="padding:7px 8px;text-align:center;font-weight:700;color:#0369a1">${sick}</td><td style="padding:7px 8px;text-align:center;font-weight:700;color:#ef4444">${ab}</td><td style="padding:7px 8px;text-align:center"><span style="padding:3px 10px;border-radius:16px;font-weight:700;font-size:.82rem;background:${bg};color:${tc}">${pct}%</span></td></tr>`;
+      tableRows+=`<tr style="border-top:1px solid #f1f5f9">
+        <td style="padding:7px 8px;color:#94a3b8;font-size:.8rem">${i+1}</td>
+        <td style="padding:7px 8px">${s.name}</td>
+        <td style="padding:7px 8px;text-align:center"><span style="padding:2px 8px;border-radius:12px;background:#eff6ff;color:#1d4ed8;font-size:.8rem">${s.cls}</span></td>
+        <td style="padding:7px 8px;text-align:center;font-weight:700;color:#15803d">${p}</td>
+        <td style="padding:7px 8px;text-align:center;font-weight:700;color:#b45309">${l}</td>
+        <td style="padding:7px 8px;text-align:center;font-weight:700;color:#0369a1">${sick}</td>
+        <td style="padding:7px 8px;text-align:center;font-weight:700;color:#ef4444">${ab}</td>
+        <td style="padding:7px 8px;text-align:center"><span style="padding:3px 10px;border-radius:16px;font-weight:700;font-size:.82rem;background:${bg};color:${tc}">${pct}%</span></td>
+      </tr>`;
     });
     document.getElementById('pr-stats').innerHTML = `
       <div style="background:#f0fdf4;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#15803d;margin:0">วันเรียน</p><h2 style="color:#15803d;margin:4px 0 0">${days.length}</h2></div>
       <div style="background:#eff6ff;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#1d4ed8;margin:0">นักเรียน</p><h2 style="color:#1d4ed8;margin:4px 0 0">${students.length}</h2></div>
       <div style="background:#fefce8;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#b45309;margin:0">สาย (ครั้งรวม)</p><h2 style="color:#b45309;margin:4px 0 0">${totalL}</h2></div>
       <div style="background:#fef2f2;border-radius:10px;padding:12px;text-align:center"><p style="font-size:.75rem;color:#b91c1c;margin:0">ขาด (ครั้งรวม)</p><h2 style="color:#b91c1c;margin:4px 0 0">${totalAb}</h2></div>`;
-    document.getElementById('pr-body').innerHTML = `<div style="overflow-x:auto;margin-bottom:16px"><table style="width:100%;border-collapse:collapse;font-size:.88rem"><thead><tr style="background:#1e40af;color:white"><th style="padding:8px">#</th><th style="padding:8px;text-align:left">ชื่อ-นามสกุล</th><th style="padding:8px">ห้อง</th><th style="padding:8px;color:#86efac">มาเรียน</th><th style="padding:8px;color:#fde68a">สาย</th><th style="padding:8px;color:#bae6fd">ป่วย</th><th style="padding:8px;color:#fca5a5">ขาด</th><th style="padding:8px">% มา</th></tr></thead><tbody>${tableRows}</tbody></table></div><p style="font-size:.78rem;color:#64748b">* % มา = (มาเรียน + สาย) / จำนวนวันเรียน × 100</p>`;
+    document.getElementById('pr-body').innerHTML = `
+      <div style="overflow-x:auto;margin-bottom:16px">
+        <table style="width:100%;border-collapse:collapse;font-size:.88rem">
+          <thead><tr style="background:#1e40af;color:white">
+            <th style="padding:8px">#</th>
+            <th style="padding:8px;text-align:left">ชื่อ-นามสกุล</th>
+            <th style="padding:8px">ห้อง</th>
+            <th style="padding:8px;color:#86efac">มาเรียน</th>
+            <th style="padding:8px;color:#fde68a">สาย</th>
+            <th style="padding:8px;color:#bae6fd">ป่วย</th>
+            <th style="padding:8px;color:#fca5a5">ขาด</th>
+            <th style="padding:8px">% มา</th>
+          </tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+      <p style="font-size:.78rem;color:#64748b">* % มา = (มาเรียน + สาย) / จำนวนวันเรียน × 100</p>`;
   }
 
   document.getElementById('pr-school').innerText  = CFG.schoolName || 'Smart School';
@@ -1695,6 +1847,7 @@ function openPrintReport(type){
   document.getElementById('modal-print').style.display = 'block';
   initSigPad();
 }
+
 
 // ===== SIGNATURE PAD =====
 var sigDrawing=false, sigCtx=null;
@@ -2026,7 +2179,6 @@ async function confirmEditStudentName(id, oldCls) {
   
   if (!newName) { toast('กรอกชื่อก่อน', true); return; }
 
-  // ครูแก้ได้เฉพาะชื่อ ห้องเปลี่ยนไม่ได้
   var isAdmin = CURRENT_USER && CURRENT_USER.role === 'admin';
   if (!isAdmin) newCls = oldCls;
 
@@ -2043,9 +2195,14 @@ async function confirmEditStudentName(id, oldCls) {
       values: [id, newName, newCls]
     });
 
-    // อัพเดต cache ทันที
+    // ✅ อัพเดต Students cache
     s.name = newName;
     s.cls  = newCls;
+
+    // ✅ อัพเดตชื่อใน Attendance cache ด้วย
+    DATA.attendance.forEach(a => {
+      if (a.id == id) a.name = newName;
+    });
 
     renderDash();
     renderStudents();
@@ -2053,6 +2210,7 @@ async function confirmEditStudentName(id, oldCls) {
   } catch(e) { toast('Error: '+e.message, true); }
   load('');
 }
+
 function applyTimeLocal(){
   var t = {
     ontime: document.getElementById('mg-time-ontime').value,
@@ -2209,6 +2367,8 @@ function pickLateTime(id, name, cls){
   setTimeout(()=> document.getElementById('late-time-input').focus(), 100);
 }
 
+
+
 async function confirmLate(id, name, cls){
   var timeVal = document.getElementById('late-time-input').value; // HH:MM
   if(!timeVal){ toast('กรุณาเลือกเวลา', true); return; }
@@ -2232,6 +2392,126 @@ async function confirmLate(id, name, cls){
     await loadData();
   }catch(e){ toast('Error: '+e.message, true); }
   load('');
+}
+
+var HOLIDAYS = []; // {date, type, desc, rowNum}
+
+async function loadHolidays(){
+  try {
+    var r = await apiPost({action:'get', sheet:'Holidays'});
+    var rows = (r.values||[]).slice(1);
+    var seen = {};
+    HOLIDAYS = rows.map((row, i) => {
+      var rawDate = String(row[0]||'').trim();
+      var date = rawDate;
+      if(rawDate.includes('T') && rawDate.length > 10){
+        var d = new Date(rawDate);
+        d = new Date(d.getTime() + 7*60*60*1000);
+        date = d.toISOString().substring(0,10);
+      }
+      return { date, type: String(row[1]||'holiday'), desc: String(row[2]||''), rowNum: i+2 };
+    }).filter(h => {
+      if(!h.date || h.date.length !== 10) return false;
+      // ✅ กรองซ้ำออก
+      var key = h.date + '_' + h.type;
+      if(seen[key]) return false;
+      seen[key] = true;
+      return true;
+    });
+  } catch(e) { HOLIDAYS = []; }
+  renderHolidays();
+}
+
+function renderHolidays(){
+  var html = '<tr><th>วันที่</th><th>ประเภท</th><th>รายละเอียด</th><th></th></tr>';
+  if(!HOLIDAYS.length){
+    html += '<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:16px">ยังไม่มีข้อมูล</td></tr>';
+  } else {
+    HOLIDAYS.sort((a,b)=>a.date.localeCompare(b.date)).forEach(h=>{
+      var isHoliday = h.type === 'holiday';
+      html += `<tr>
+        <td>${h.date}</td>
+        <td><span class="badge" style="background:${isHoliday?'#fee2e2':'#dcfce7'};color:${isHoliday?'#b91c1c':'#15803d'}">
+          ${isHoliday?'🔴 วันหยุด':'🟢 เปิดพิเศษ'}</span></td>
+        <td>${h.desc}</td>
+        <td><button class="btn btn-r" style="padding:3px 10px;font-size:.8rem" onclick="deleteHoliday(${h.rowNum})">🗑️</button></td>
+      </tr>`;
+    });
+  }
+  document.getElementById('tb-holidays').innerHTML = html;
+}
+
+async function addHoliday(){
+  var date = document.getElementById('hd-date').value;
+  var type = document.getElementById('hd-type').value;
+  var desc = document.getElementById('hd-desc').value.trim();
+  if(!date){ toast('เลือกวันที่ก่อน', true); return; }
+  if(HOLIDAYS.find(h=>h.date===date && h.type===type)){ toast('มีวันนี้แล้ว', true); return; }
+  load('บันทึก...');
+  try {
+    await apiCall({action:'append', sheet:'Holidays', values:[date, type, desc]});
+    HOLIDAYS.push({date, type, desc, rowNum: HOLIDAYS.length+2});
+    document.getElementById('hd-date').value = '';
+    document.getElementById('hd-desc').value = '';
+    renderHolidays();
+    toast('เพิ่ม '+(type==='holiday'?'วันหยุด':'วันเปิดพิเศษ')+' '+date+' เรียบร้อย');
+  } catch(e){ toast('Error: '+e.message, true); }
+  load('');
+}
+
+async function deleteHoliday(rowNum){
+  if(!confirm('ลบรายการนี้?')) return;
+  load('ลบ...');
+  try {
+    await apiCall({action:'update', sheet:'Holidays',
+      range:`A${rowNum}:C${rowNum}`, values:['','','']});
+    HOLIDAYS = HOLIDAYS.filter(h=>h.rowNum!==rowNum);
+    renderHolidays();
+    toast('ลบเรียบร้อย');
+  } catch(e){ toast('Error: '+e.message, true); }
+  load('');
+}
+
+// ✅ ฟังก์ชันช่วย — กรองวันเรียนจริง
+function getSchoolDays(dateList){
+  var holidays = new Set(HOLIDAYS.filter(h=>h.type==='holiday').map(h=>h.date));
+  var specials = new Set(HOLIDAYS.filter(h=>h.type==='special').map(h=>h.date));
+  
+  return dateList.filter(d => {
+    // ✅ เสาร์(6) อาทิตย์(0) ตัดออก ยกเว้นถ้าเป็นวันเปิดพิเศษ
+    var day = new Date(d).getDay();
+    if((day === 0 || day === 6) && !specials.has(d)) return false;
+    // ✅ วันหยุดตัดออก ยกเว้นถ้าเป็นวันเปิดพิเศษ
+    if(holidays.has(d) && !specials.has(d)) return false;
+    return true;
+  });
+}
+
+function switchReport(type){
+  ['day','month','term','holidays'].forEach(t => {
+    document.getElementById('rp-'+t).style.display = t===type ? 'block' : 'none';
+    var btn = document.getElementById('rt-'+t);
+    if(btn){
+      btn.style.background = t===type ? '#2563eb' : '#f1f5f9';
+      btn.style.color      = t===type ? 'white'   : '#64748b';
+    }
+  });
+  if(type==='day')      renderReport();
+  if(type==='month')    renderMonthReport();
+  if(type==='term')     renderTermReport();
+  if(type==='holidays') loadHolidays();
+}
+
+function initReportPage(){
+  loadTeachers();
+  loadTerm();
+  loadHolidays(); // ✅ เพิ่ม
+  fillReportClsSelectors();
+  var d = new Date();
+  var ds = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  var ms = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  document.getElementById('rp-date').value      = ds;
+  document.getElementById('rp-month-sel').value = ms;
 }
 </script>
 </body>
